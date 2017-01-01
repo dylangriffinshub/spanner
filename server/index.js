@@ -1,56 +1,29 @@
-var https     = require('https')
-var path      = require('path')
-var url       = require('url')
-var httpProxy = require('http-proxy')
-var express   = require('express')
+const path = require('path')
+const express = require('express')
+const apiProxy = require('./api-proxy')
 
-var isProd   = process.env.NODE_ENV === 'production'
-var PORT     = process.env.PORT || 8080
-var HOST     = isProd ? 'https://spanner-api.apps.nicinabox.com' : 'http://localhost:3000'
+const PORT = process.env.PORT || 8081
+const ONE_YEAR = 31557600000
 
-var ONE_YEAR = 31557600000
+const app = express()
 
-var app = express()
-var apiProxy = httpProxy.createProxyServer({
-  ignorePath: true,
-  agent: isProd ? https.globalAgent : false,
-  headers: {
-    host: url.parse(HOST).hostname
-  }
-})
+const handler = (filename) => (req, res) => res.sendFile(path.join(__dirname, `../public/${filename}.html`))
 
-var remoteIp = function (req) {
-  return req.headers['x-forwarded-for'] || req.connection.remoteAddress
-}
+app.use('/', express.static(path.join(__dirname, '../public/'), { maxAge: ONE_YEAR }))
 
-var static = express.static(path.join(__dirname, '../public/'), { maxAge: ONE_YEAR })
-app.use('/', static)
-
-app.all('/api/*', function(req, res){
-  var path = req.path.replace('/api', '')
-  console.log('Api request for', remoteIp(req))
-
-  apiProxy.web(req, res, {
-    target: HOST + path,
-    headers: Object.assign({}, apiProxy.options.headers, {
-      'x-forwarded-for': remoteIp(req)
-    })
+app.all('/api/*', (req, res) => {
+  apiProxy.server.web(req, res, {
+    target: apiProxy.PROXY_HOST + req.path.replace('/api', '')
   })
 })
 
-app.get('/apple-app-site-association', function (req, res) {
+app.get('/apple-app-site-association', (req, res) => {
   res.set('Content-Type', 'application/pkcs7-mime')
   res.send(require('./apple-app-site-association.json'))
 })
 
-var routes = ['/', '/login/:token', '/vehicles', '/vehicles/:id']
-
-var handler = function (req, res) {
-  return res.sendFile(path.join(__dirname, '../public/index.html'))
-}
-routes.forEach(function (route) {
-  return app.get(route, handler)
-})
+const routes = ['/', '/sessions/:token', '/vehicles', '/vehicles/:id']
+routes.forEach((route) => app.get(route, handler('index')))
 
 app.get('/terms', function (req, res) {
   return res.sendFile(path.join(__dirname, '../public/terms.html'))
@@ -58,4 +31,4 @@ app.get('/terms', function (req, res) {
 
 app.listen(PORT)
 
-console.log('Magic happens on port ' + PORT)
+console.log('Magic happens on port ' + PORT) // eslint-disable-line
