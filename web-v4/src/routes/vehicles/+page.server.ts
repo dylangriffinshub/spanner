@@ -1,5 +1,10 @@
 import { getCurrentUser } from '$lib/data/user';
-import { getAllVehicles, type Sortable, type VehicleSortStrategy, type Order } from '$lib/data/vehicles';
+import {
+	getAllVehicles,
+	type Sortable,
+	type VehicleSortStrategy,
+	type Order,
+} from '$lib/data/vehicles';
 import { updateUser } from '$lib/data/user';
 import { withActionErrors } from '$lib/utils/actions';
 import { decode, validate } from '$lib/utils/formData';

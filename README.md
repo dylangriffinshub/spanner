@@ -44,31 +44,31 @@ This is a monorepo containing two main applications:
 
 1. **Clone the repository**
 
-    ```bash
-    git clone https://github.com/nicinabox/spanner.git
-    cd spanner
-    ```
+   ```bash
+   git clone https://github.com/dylangriffinshub/spanner.git
+   cd spanner
+   ```
 
 2. **Setup the API**
 
-    ```bash
-    cd api
-    bundle install
-    rails db:create db:migrate db:seed
-    rails server
-    ```
+   ```bash
+   cd api
+   bundle install
+   rails db:create db:migrate db:seed
+   rails server
+   ```
 
 3. **Setup the Web Application**
 
-    ```bash
-    cd web-v4
-    npm install
-    npm run dev
-    ```
+   ```bash
+   cd web-v4
+   npm install
+   npm run dev
+   ```
 
 4. **Access the applications**
-    - Frontend: http://localhost:5173
-    - API: http://localhost:3001
+   - Frontend: http://localhost:5173
+   - API: http://localhost:3001
 
 ## Self-Hosted Deployment
 
@@ -77,7 +77,7 @@ Run Spanner on your own infrastructure using Docker Compose.
 ### Quick Start
 
 ```bash
-git clone https://github.com/nicinabox/spanner.git
+git clone https://github.com/dylangriffinshub/spanner.git
 cd spanner
 ./bin/setup
 docker compose up -d
@@ -92,17 +92,17 @@ is created automatically.
 All configuration lives in `.env` at the project root. The setup script
 handles most values, but you can edit `.env` directly.
 
-| Variable | Required | Default | Purpose |
-|---|---|---|---|
-| `DB_PASSWORD` | yes | auto-generated | PostgreSQL password |
-| `SECRET_KEY_BASE` | yes | auto-generated | Rails signing key |
-| `CLIENT_SECRET` | yes | auto-generated | iron-session cookie secret |
-| `WEB_URL` | yes | `http://localhost:3000` | Public URL for email links |
-| `SMTP_HOST` | no | -- | SMTP server hostname |
-| `SMTP_PORT` | no | `587` | SMTP port |
-| `SMTP_USERNAME` | no | -- | SMTP username |
-| `SMTP_PASSWORD` | no | -- | SMTP password |
-| `FROM_EMAIL` | no | `noreply@localhost` | Sender address for emails |
+| Variable          | Required | Default                 | Purpose                    |
+| ----------------- | -------- | ----------------------- | -------------------------- |
+| `DB_PASSWORD`     | yes      | auto-generated          | PostgreSQL password        |
+| `SECRET_KEY_BASE` | yes      | auto-generated          | Rails signing key          |
+| `CLIENT_SECRET`   | yes      | auto-generated          | iron-session cookie secret |
+| `WEB_URL`         | yes      | `http://localhost:3000` | Public URL for email links |
+| `SMTP_HOST`       | no       | --                      | SMTP server hostname       |
+| `SMTP_PORT`       | no       | `587`                   | SMTP port                  |
+| `SMTP_USERNAME`   | no       | --                      | SMTP username              |
+| `SMTP_PASSWORD`   | no       | --                      | SMTP password              |
+| `FROM_EMAIL`      | no       | `noreply@localhost`     | Sender address for emails  |
 
 ### Updating
 
@@ -238,4 +238,4 @@ This project is licensed under the MIT License.
 
 ## Author
 
-**Nic Haynes** - [nic@nicinabox.com](mailto:nic@nicinabox.com) - [https://nicinabox.com](https://nicinabox.com)
+**Nic Haynes** - [nic@dylangriffinshub.com](mailto:nic@dylangriffinshub.com) - [https://dylangriffinshub.com](https://dylangriffinshub.com)

@@ -58,8 +58,7 @@ export const getIntervalSummary = (
 // --- new unified sort ---
 
 export type UnifiedItem =
-	| { kind: 'reminder'; data: Reminder }
-	| { kind: 'schedule'; data: ServiceSchedule };
+	{ kind: 'reminder'; data: Reminder } | { kind: 'schedule'; data: ServiceSchedule };
 
 export function sortUnifiedByDue(
 	reminders: Reminder[],

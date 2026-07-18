@@ -25,15 +25,21 @@ Returns current user sessions
 ## Vehicles
 
 ### GET /vehicles
+
 ### POST /vehicles
+
 ### PUT /vehicles/:id
+
 ### DELETE /vehicles/:id
 
 ## Records
 
 ### GET /vehicles/:vehicle_id/records
+
 ### POST /vehicles/:vehicle_id/records
+
 ### PUT /vehicles/:vehicle_id/records/:id
+
 ### DELETE /vehicles/:vehicle_id/records/:id
 
 Records support optional file attachments (receipts, photos, etc.). Attachments
@@ -61,6 +67,9 @@ Removes a single attachment from a record.
 ## Reminders
 
 ### GET /vehicles/:vehicle_id/reminders
+
 ### POST /vehicles/:vehicle_id/reminders
+
 ### PUT /vehicles/:vehicle_id/reminders/:id
+
 ### DELETE /vehicles/:vehicle_id/reminders/:id

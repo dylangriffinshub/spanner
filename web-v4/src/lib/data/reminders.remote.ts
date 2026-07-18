@@ -15,16 +15,13 @@ export const estimateReminderDate = query(
 		const event = getRequestEvent();
 		const token = await getAuthToken(event.cookies);
 
-		return request<{ reminderDate: string }>(
-			`/vehicles/${vehicleId}/reminders/estimate_date`,
-			{
-				authToken: token,
-				params: {
-					'reminder[mileage]': mileage,
-					'reminder[date]': date,
-					'reminder[reminder_type]': reminderType,
-				},
+		return request<{ reminderDate: string }>(`/vehicles/${vehicleId}/reminders/estimate_date`, {
+			authToken: token,
+			params: {
+				'reminder[mileage]': mileage,
+				'reminder[date]': date,
+				'reminder[reminder_type]': reminderType,
 			},
-		);
+		});
 	},
 );

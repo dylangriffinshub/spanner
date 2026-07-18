@@ -22,7 +22,8 @@ const isProtected = (url: string) => {
 	});
 };
 
-const probePattern = /\.(php|asp|aspx|jsp)$|^\/(wp-|wordpress|administrator|vendor\/|composer|\.env|\.git|shell|cgi-bin)/i;
+const probePattern =
+	/\.(php|asp|aspx|jsp)$|^\/(wp-|wordpress|administrator|vendor\/|composer|\.env|\.git|shell|cgi-bin)/i;
 
 export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, resolve }) => {
 	// Silently reject vulnerability scanner probes
