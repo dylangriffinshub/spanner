@@ -1,6 +1,6 @@
 import { AddIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import {
-    Box, Button, Center, Flex, Heading, HStack, SimpleGrid, Text,
+    Box, Button, Center, Flex, Heading, HStack, SimpleGrid, Text, useBreakpointValue,
 } from '@chakra-ui/react';
 import ColorModeButton from 'components/common/ColorModeButton';
 import Header from 'components/common/Header';
@@ -12,12 +12,19 @@ import VehiclesList from 'components/VehiclesList';
 import useRequest from 'hooks/useRequest';
 import { Vehicle, vehiclesAPIPath } from 'queries/vehicles';
 import React, { useState } from 'react';
+import createPersistedState from 'use-persisted-state';
 import { authRedirect, withSession } from 'utils/session';
 import LinkButton from 'components/common/LinkButton';
 import { newVehiclePath } from 'utils/resources';
 import EmptyState from 'components/common/EmptyState';
-import { VehicleStat } from 'components/VehicleStats';
 import OverallStats from 'components/OverallStats';
+import { VehicleSortStrategy } from 'utils/sortable';
+import dynamic from 'next/dynamic';
+
+const VehicleSortMenu = dynamic(
+    () => import('components/VehicleSortMenu'),
+    { ssr: false },
+);
 
 interface VehiclesProps {
 }
@@ -31,7 +38,7 @@ const PageHeader = () => {
                     <Logo height={30} />
                 </Center>
                 <Flex justify="end">
-                    <HStack spacing={6}>
+                    <HStack spacing={4}>
                         <ColorModeButton />
                         <UserMenu />
                     </HStack>
@@ -41,32 +48,19 @@ const PageHeader = () => {
     );
 };
 
-const sortCreatedAtDesc = (a: Vehicle, b: Vehicle) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-};
-
-const sortAlphaAsc = (a: Vehicle, b: Vehicle) => {
-    const aName = a.name.toLowerCase();
-    const bName = b.name.toLowerCase();
-    if (aName < bName) return -1;
-    if (aName > bName) return 1;
-    return 0;
-};
-
-const sortPositionAsc = (a: Vehicle, b:Vehicle) => {
-    return (a.position ?? 0) - (b.position ?? 0);
-};
+const useSortStrategyState = createPersistedState('vehicleSortStrategy');
 
 const Vehicles: React.FC<VehiclesProps> = () => {
     const { data, loading } = useRequest<Vehicle[]>(vehiclesAPIPath);
 
     const [showRetired, setShowRetired] = useState(false);
 
-    const activeVehicles = data?.filter((v) => !v.retired)
-        .sort(sortCreatedAtDesc) ?? [];
+    const activeVehicles = data?.filter((v) => !v.retired) ?? [];
+    const retiredVehicles = data?.filter((v) => v.retired) ?? [];
 
-    const retiredVehicles = data?.filter((v) => v.retired)
-        .sort(sortCreatedAtDesc) ?? [];
+    const [sortStrategy, setSortStrategy] = useSortStrategyState<VehicleSortStrategy>('newest_first');
+
+    const newVehicleButtonSize = useBreakpointValue({ sm: 'xs', base: 'sm' });
 
     return (
         <Page
@@ -79,16 +73,19 @@ const Vehicles: React.FC<VehiclesProps> = () => {
                 <OverallStats activeVehicles={activeVehicles} />
             </Box>
 
-            <HStack spacing={4}>
-                <Heading fontSize="xl">
-                    Vehicles
-                </Heading>
-                <LinkButton href={newVehiclePath()} leftIcon={<AddIcon />} size="xs" variant="ghost">
-                    New Vehicle
-                </LinkButton>
-            </HStack>
+            <Flex direction={['column', 'row']} align={[null, 'center']}>
+                <Flex flex={1} justify="space-between" align="center" mb={[2, 0]} mr={[0, 2]}>
+                    <Heading fontSize="xl">
+                        Vehicles
+                    </Heading>
+                    <LinkButton href={newVehiclePath()} leftIcon={<AddIcon />} size={newVehicleButtonSize} variant="ghost">
+                        New Vehicle
+                    </LinkButton>
+                </Flex>
+                <VehicleSortMenu sortStrategy={sortStrategy} onChange={setSortStrategy} />
+            </Flex>
 
-            <VehiclesList vehicles={activeVehicles} loading={loading} />
+            <VehiclesList vehicles={activeVehicles} loading={loading} sortStrategy={sortStrategy} />
 
             {!activeVehicles.length && !loading && (
                 <EmptyState
@@ -119,7 +116,7 @@ const Vehicles: React.FC<VehiclesProps> = () => {
             )}
 
             {showRetired && (
-                <VehiclesList vehicles={retiredVehicles} />
+                <VehiclesList vehicles={retiredVehicles} sortStrategy="newest_first" />
             )}
         </Page>
     );

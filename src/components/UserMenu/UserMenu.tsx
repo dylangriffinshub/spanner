@@ -1,6 +1,6 @@
 import {
     HStack, Image, Skeleton,
-    Menu, MenuButton, MenuGroup, MenuItem, MenuList, Text,
+    Menu, MenuButton, MenuGroup, MenuItem, MenuList, Text, Button,
 } from '@chakra-ui/react';
 import crypto from 'crypto';
 import useRequest from 'hooks/useRequest';
@@ -29,25 +29,30 @@ export const UserMenu: React.FC<UserMenuProps> = () => {
     return (
         <Menu>
             <Skeleton isLoaded={Boolean(user)}>
-                <MenuButton color="brand.100">
-                    <HStack spacing={2} alignItems="center">
-                        <Text>
-                            {user?.email && shortenEmail(user.email)}
-                        </Text>
-                        {user && (
+                <MenuButton
+                    rightIcon={
+                        user && (
                             <Image
                                 borderRadius="full"
                                 boxSize={6}
                                 src={gravatarUrl(user.email)}
                             />
-                        )}
-                    </HStack>
+                        )
+                    }
+                    colorScheme="brand"
+                    as={Button}
+                    size="sm"
+                    variant="ghost-header"
+                >
+                    <Text isTruncated maxW="100%" display={['none', 'block']}>
+                        {user?.email && shortenEmail(user.email)}
+                    </Text>
                 </MenuButton>
             </Skeleton>
             <MenuList>
                 <MenuGroup title={user?.email}>
                     <MenuItem as="a" href="/logout">
-                        Logout
+                        🌴 Sign out
                     </MenuItem>
                 </MenuGroup>
             </MenuList>
