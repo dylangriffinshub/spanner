@@ -27,11 +27,13 @@ module V2
       record = records.build(record_params)
       has_manual_ids = params.dig(:record, :classification_ids)
 
-      validate_attachment_sizes!
+      if params[:record][:attachments].present?
+        SecureAttachments.validate_files!(params[:record][:attachments])
+        record.attachments.attach(params[:record][:attachments])
+      end
       record.save!
       record.reload
       sync_classifications(record) if has_manual_ids
-      record.attachments.attach(params[:record][:attachments]) if params[:record][:attachments].present?
       render json: record
     end
 
@@ -39,11 +41,14 @@ module V2
       record = records.find(params[:id])
       has_manual_ids = params.dig(:record, :classification_ids)
 
-      validate_attachment_sizes!
+      if params[:record][:attachments].present?
+        SecureAttachments.validate_files!(params[:record][:attachments])
+        record.attachments.attach(params[:record][:attachments])
+      end
       record.update!(record_params)
       record.reload
       sync_classifications(record) if has_manual_ids
-      record.attachments.attach(params[:record][:attachments]) if params[:record][:attachments].present?
+      purge_attachments!(record)
       render json: record
     end
 
@@ -89,18 +94,12 @@ module V2
       record.sync_manual_classifications(ids)
     end
 
-    def validate_attachment_sizes!
-      uploaded = params[:record][:attachments]
-      return if uploaded.blank?
+    def purge_attachments!(record)
+      signed_ids = params.dig(:record, :attachments_to_delete)
+      return if signed_ids.blank?
 
-      Array(uploaded).each do |file|
-        next unless file.respond_to?(:size)
-
-        next unless file.size > Record::MAX_ATTACHMENT_SIZE
-
-        raise(ActiveRecord::RecordInvalid, Record.new.tap do |r|
-          r.errors.add(:attachments, 'exceeds the 10MB size limit')
-        end)
+      record.attachments.each do |attachment|
+        attachment.purge if signed_ids.include?(attachment.signed_id)
       end
     end
   end

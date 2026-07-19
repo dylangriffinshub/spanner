@@ -2,19 +2,21 @@ import { getVehicle } from '$lib/data/vehicles';
 import {
 	getServiceSchedules,
 	completeServiceSchedule,
-	createServiceSchedule,
+	createServiceSchedules,
 	deferServiceSchedule,
 	clearDeferServiceSchedule,
-	getPresets,
+	getServiceSchedulePresets,
 } from '$lib/data/serviceSchedules';
 import { getVehicleReminders } from '$lib/data/reminders';
 import { getClassifications } from '$lib/data/classifications';
-import { uploadRecord, toMultipartFormData } from '$lib/data/multipart';
-import { withActionErrors } from '$lib/utils/actions';
-import { parseForm } from '$lib/utils/schema';
+import { decode, validate, encode } from '$lib/utils/formData';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import type { PageServerLoad, Actions } from './$types';
+import { numberSchema } from '$lib/schemas';
+import { withActionErrors } from '$lib/utils/actions';
+import { attachmentsSchema } from '../history/schemas';
+import { createHistoryEntry } from '$lib/data/history';
 
 const completeFormSchema = v.object({
 	id: v.string(),
@@ -22,13 +24,28 @@ const completeFormSchema = v.object({
 	notes: v.optional(v.string()),
 	mileage: v.optional(v.string()),
 	cost: v.optional(v.string()),
+	attachments: v.optional(attachmentsSchema),
 });
-import { numberSchema } from '$lib/schemas';
 
 const deferFormSchema = v.object({
 	id: v.optional(numberSchema),
 	months: v.optional(numberSchema),
 	distance: v.optional(numberSchema),
+});
+
+const suggestSchema = v.object({
+	distanceUnit: v.string(),
+	presetData: v.pipe(
+		v.string(),
+		v.transform((input) => JSON.parse(input)),
+		v.array(
+			v.object({
+				name: v.string(),
+				intervals: v.record(v.string(), v.number()),
+				keywords: v.array(v.string()),
+			}),
+		),
+	),
 });
 
 const idOnlySchema = v.object({
@@ -41,7 +58,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		getServiceSchedules(params.id!, locals),
 		getClassifications(params.id!, locals),
 		getVehicleReminders(params.id!, locals),
-		getPresets({
+		getServiceSchedulePresets({
 			authToken: locals.authToken,
 			webUrl: locals.webUrl,
 			params: { distance_unit: vehicle.distanceUnit },
@@ -52,32 +69,21 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 export const actions: Actions = {
-	complete: async ({ locals, params, request }) => {
+	complete: withActionErrors(async ({ locals, params, request }) => {
 		const formData = await request.formData();
-		const parsed = parseForm(formData, completeFormSchema);
+		const parsed = await validate(decode(formData), completeFormSchema);
 		if (parsed.errors) return fail(422, { errors: parsed.errors });
 
-		const { id, date, notes, mileage, cost } = parsed.data;
-		const files = formData.getAll('record[attachments][]') as File[];
+		const body = encode({ record: parsed.data });
 
-		const body = toMultipartFormData({ date, notes, mileage, cost }, { prefix: 'record' });
-		for (const file of files) {
-			body.append('record[attachments][]', file);
-		}
-
-		try {
-			const record = await uploadRecord(params.id!, undefined, body, locals);
-			await completeServiceSchedule(params.id!, id, { record_id: (record as any).id }, locals);
-			redirect(303, `/vehicles/${params.id}/tasks`);
-		} catch (err) {
-			const message = err instanceof Error ? err.message : 'Failed to complete schedule';
-			return fail(422, { errors: [{ id: 'form', title: message }] });
-		}
-	},
+		const result = await createHistoryEntry(params.id!, body, locals);
+		await completeServiceSchedule(params.id!, parsed.data.id, { record_id: result.id }, locals);
+		redirect(303, `/vehicles/${params.id}/tasks`);
+	}),
 
 	defer: withActionErrors(async ({ request, locals, params }) => {
 		const formData = await request.formData();
-		const parsed = parseForm(formData, deferFormSchema);
+		const parsed = await validate(decode(formData), deferFormSchema);
 		if (parsed.errors) return fail(422, { errors: parsed.errors });
 		if (!parsed.data.id)
 			return fail(422, { errors: [{ id: 'form', title: 'Missing schedule id' }] });
@@ -96,7 +102,7 @@ export const actions: Actions = {
 
 	clearDefer: withActionErrors(async ({ locals, params, request }) => {
 		const formData = await request.formData();
-		const parsed = parseForm(formData, idOnlySchema);
+		const parsed = await validate(decode(formData), idOnlySchema);
 		if (parsed.errors) return fail(422, { errors: parsed.errors });
 		if (!parsed.data.id)
 			return fail(422, { errors: [{ id: 'form', title: 'Missing schedule id' }] });
@@ -105,34 +111,20 @@ export const actions: Actions = {
 		redirect(303, `/vehicles/${params.id}/tasks`);
 	}),
 
-	suggest: async ({ locals, params, request }) => {
-		const data = await request.formData();
-		const presetData = JSON.parse((data.get('preset_data') as string) || '[]') as Array<{
-			name: string;
-			intervals: Record<string, number>;
-			keywords: string[];
-		}>;
-		const distanceUnit = (data.get('distance_unit') as string) || 'mi';
+	suggest: withActionErrors(async ({ locals, params, request }) => {
+		const formData = await request.formData();
+		const parsed = await validate(decode(formData), suggestSchema);
+		if (parsed.errors) return fail(422, { errors: parsed.errors });
 
-		if (!presetData.length) {
-			return { success: true };
-		}
+		const schedules = parsed.data.presetData.map((preset) => ({
+			classificationName: preset.name,
+			keywords: preset.keywords,
+			distanceInterval: preset.intervals[parsed.data.distanceUnit],
+			monthInterval: preset.intervals['mo'],
+		}));
 
-		const opts = { authToken: locals.authToken, webUrl: locals.webUrl };
-
-		for (const preset of presetData) {
-			await createServiceSchedule(
-				params.id!,
-				{
-					classificationName: preset.name,
-					keywords: preset.keywords,
-					distanceInterval: preset.intervals[distanceUnit],
-					monthInterval: preset.intervals['mo'],
-				},
-				opts,
-			);
-		}
+		await createServiceSchedules(params.id!, schedules, locals);
 
 		return { success: true };
-	},
+	}),
 };

@@ -4,11 +4,15 @@ import type { FetcherConfig, RequestOpts } from './types';
 import { browser } from '$app/env';
 
 export const apiHeaders = {
-	'Content-Type': 'application/json',
 	Accept: 'application/vnd.api+json; version=2',
 };
 
 const tokenAuthHeader = (token: string | undefined) => (token ? `Token ${token}` : undefined);
+
+export const withBody = (data: FormData | Record<string, any>, namespace?: string) => {
+	if (data instanceof FormData) return { body: data };
+	return { json: namespace ? { [namespace]: data } : data };
+};
 
 /**
  * Current browser UTC offset as a signed number string (e.g. `-5`, `5.5`).
