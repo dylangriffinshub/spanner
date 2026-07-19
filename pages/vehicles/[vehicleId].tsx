@@ -1,21 +1,13 @@
-import { AddIcon, ArrowBackIcon } from '@chakra-ui/icons';
-import {
-    Box, Button, Container, Flex, Heading, Text, HStack, Spacer, Tab, TabPanel, TabPanels, Tabs, Skeleton, TabList,
-} from '@chakra-ui/react';
-import Header from 'components/Header';
+import { HStack, TabPanel, TabPanels } from '@chakra-ui/react';
+import BackButton from 'components/BackButton';
 import LinkPreload from 'components/LinkPreload';
 import Page from 'components/Page';
-import Search from 'components/Search';
-import TabMenu from 'components/TabMenu';
 import TabsHeader from 'components/TabsHeader';
 import VehicleActionsMenu from 'components/VehicleActionsMenu';
 import VehicleNotes from 'components/VehicleNotes';
-import VehicleRecordsTable, { SkeletonVehicleRecordsTable } from 'components/VehicleRecordsTable';
-import VehicleSummary from 'components/VehicleSummary';
+import VehicleService from 'components/VehicleService';
 import useRequest from 'hooks/useRequest';
-import Head from 'next/head';
-import Link from 'next/link';
-import { VehicleRecord, vehicleRecordsPath } from 'queries/records';
+import { vehicleRecordsPath } from 'queries/records';
 import { Vehicle, vehiclePath } from 'queries/vehicles';
 import React from 'react';
 import { authRedirect, withSession } from 'utils/session';
@@ -26,36 +18,24 @@ export interface VehiclePageProps {
     }
 }
 
-const PageHeader = ({ vehicle }) => {
-    return (
-        <TabsHeader
-            tabs={['Service', 'Notes']}
-            LeftComponent={(
-                <HStack spacing={2}>
-                    <Link href="/" passHref>
-                        <Button
-                            as="a"
-                            leftIcon={<ArrowBackIcon />}
-                            size="sm"
-                            variant="solid"
-                            colorScheme="brandInverted"
-                        >
-                            Vehicles
-                        </Button>
-                    </Link>
+const PageHeader = ({ vehicle }) => (
+    <TabsHeader
+        columns={[1, 3]}
+        tabs={['Service', 'Notes']}
+        LeftComponent={(
+            <HStack spacing={2}>
+                <BackButton href="/">
+                    Vehicles
+                </BackButton>
 
-                    <VehicleActionsMenu vehicle={vehicle} />
-                </HStack>
+                <VehicleActionsMenu vehicle={vehicle} />
+            </HStack>
             )}
-        />
-    );
-}
+    />
+);
 
 const VehiclePage: React.FC<VehiclePageProps> = ({ params }) => {
-    const { data: vehicle, loading: vehicleLoading } = useRequest<Vehicle>(vehiclePath(params.vehicleId));
-    const { data: records, loading: recordsLoading } = useRequest<VehicleRecord[]>(vehicleRecordsPath(params.vehicleId));
-
-    const anyLoading = vehicleLoading || recordsLoading;
+    const { data: vehicle } = useRequest<Vehicle>(vehiclePath(params.vehicleId));
 
     return (
         <Page
@@ -64,43 +44,13 @@ const VehiclePage: React.FC<VehiclePageProps> = ({ params }) => {
         >
             <LinkPreload path={[
                 vehiclePath(params.vehicleId),
-                vehicleRecordsPath(params.vehicleId)
-            ]} />
+                vehicleRecordsPath(params.vehicleId),
+            ]}
+            />
 
             <TabPanels>
                 <TabPanel px={0}>
-                    <Container maxW="container.xl">
-                        <Flex mb={6}>
-                            <HStack spacing={2}>
-                                <Link href={`/vehicles/${vehicle?.id}/add`} passHref>
-                                    <Button as="a" colorScheme="brand" size="sm" leftIcon={<AddIcon />}>
-                                        Add...
-                                    </Button>
-                                </Link>
-                            </HStack>
-                            <Spacer />
-                            <Search />
-                        </Flex>
-
-                        {anyLoading && (
-                            <SkeletonVehicleRecordsTable />
-                        )}
-
-                        {vehicle && records?.length && (
-                            <Box shadow="lg" p={4}>
-                                <VehicleRecordsTable records={records} enableCost={vehicle.enableCost} distanceUnit={vehicle.distanceUnit} />
-                            </Box>
-                        )}
-
-                        {!anyLoading && vehicle && !records?.length && (
-                            <Box>
-                                <Heading>
-                                    You don't have any records yet
-                                </Heading>
-                                <Text>Try adding your purchase as the first one</Text>
-                            </Box>
-                        )}
-                    </Container>
+                    <VehicleService vehicleId={params.vehicleId} />
                 </TabPanel>
                 <TabPanel px={0}>
                     {vehicle && (

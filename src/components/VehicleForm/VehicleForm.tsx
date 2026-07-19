@@ -2,6 +2,7 @@ import {
     FormControl, FormLabel, Input, FormHelperText, Button, Box, AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay,
 } from '@chakra-ui/react';
 import FormErrors from 'components/FormErrors';
+import SubmitButton from 'components/SubmitButton';
 import useFormData from 'hooks/useFormData';
 import useMutation from 'hooks/useMutation';
 import { useRouter } from 'next/router';
@@ -17,7 +18,7 @@ export interface VehicleFormProps {
 export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
     const router = useRouter();
     const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-    const cancelDeleteRef = useRef();
+    const cancelDeleteRef = useRef<HTMLButtonElement>(null);
 
     const onClose = () => setIsConfirmDeleteOpen(false);
 
@@ -50,6 +51,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
 
     const handleDeleteVehicle = (e) => {
         e.preventDefault();
+        if (!vehicle) return;
         destroyVehicleMutation(vehicle.id);
     };
 
@@ -76,9 +78,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
                     <FormHelperText>VIN is optional but recommended</FormHelperText>
                 </FormControl>
 
-                <Button type="submit" colorScheme="brand" disabled={isProcessing} isLoading={isProcessing}>
-                    Save
-                </Button>
+                <SubmitButton isProcessing={isProcessing} />
             </form>
 
             {Boolean(vehicle) && (
@@ -96,7 +96,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
                             <AlertDialogContent>
                                 <AlertDialogHeader fontSize="lg" fontWeight="bold">
                                     Delete &ldquo;
-                                    {vehicle.name}
+                                    {vehicle?.name}
                                     &rdquo;
                                 </AlertDialogHeader>
 
