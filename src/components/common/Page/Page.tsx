@@ -1,8 +1,9 @@
 import {
-    Badge, Box, Container, ContainerProps, SimpleGrid, Spacer, Tabs,
+    Badge, Box, Container, ContainerProps, HStack, SimpleGrid, Spacer, Tabs,
 } from '@chakra-ui/react';
 import Router, { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import ColorModeButton from '../ColorModeButton';
 
 export interface PageProps extends ContainerProps {
     Header?: JSX.Element;
@@ -30,7 +31,7 @@ export const Page: React.FC<PageProps> = ({ children, Header, ...containerProps 
     useEffect(() => {
         const handler = (url: string) => {
             const params = parseHashParams(url);
-            setPanel(Number(params.panel));
+            setPanel(Number(params.panel) || 0);
         };
 
         Router.events.on('hashChangeStart', handler);
@@ -49,9 +50,10 @@ export const Page: React.FC<PageProps> = ({ children, Header, ...containerProps 
                     {children}
                 </Container>
 
-                <Box alignItems="center" display="flex" p={4}>
+                <HStack p={4}>
                     <Badge colorScheme="gray" textTransform="none">v3-next</Badge>
-                </Box>
+                    <ColorModeButton variant="ghost" />
+                </HStack>
             </SimpleGrid>
         </Tabs>
     );

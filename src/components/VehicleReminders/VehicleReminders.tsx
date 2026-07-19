@@ -1,26 +1,32 @@
 import { AddIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import {
-    Container, Flex, Heading, LinkBox, LinkOverlay, StackDivider, Text, VStack,
+    Container, Flex, Heading, LinkBox, LinkOverlay, Text,
 } from '@chakra-ui/react';
 import LinkButton from 'components/common/LinkButton';
+import ReminderSummary from 'components/ReminderSummary';
 import useInlineColorMode from 'hooks/useInlineColorMode';
 import { mutate } from 'hooks/useMutation';
 import useRequest from 'hooks/useRequest';
 import Link from 'next/link';
-import { vehicleReminderPath } from 'queries/reminders';
+import { VehicleReminder, vehicleReminderPath } from 'queries/reminders';
 import { Vehicle, vehiclePath } from 'queries/vehicles';
 import React from 'react';
-import { intlFormatDateUTC } from 'utils/date';
-import { isReminderOverdue } from 'utils/reminders';
-import { formatMileage } from 'utils/vehicle';
+import { getTime } from 'utils/date';
 
 export interface VehicleRemindersProps {
     vehicleId: string
 }
 
+const sortDueSoonest = (a: VehicleReminder, b: VehicleReminder) => {
+    if (!a.reminderDate || !b.reminderDate) return -1;
+    return getTime(a.reminderDate) - getTime(b.reminderDate);
+};
+
 export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId }) => {
-    const { data: vehicle } = useRequest<Vehicle>(vehiclePath(vehicleId));
+    const { data: vehicle, loading } = useRequest<Vehicle>(vehiclePath(vehicleId));
     const cm = useInlineColorMode();
+
+    const reminders = vehicle?.reminders.sort(sortDueSoonest) ?? [];
 
     return (
         <Container>
@@ -32,7 +38,7 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
                 )}
             </Flex>
 
-            {vehicle?.reminders.map(((reminder) => {
+            {reminders.map(((reminder) => {
                 return (
                     <LinkBox
                         key={reminder.id}
@@ -40,9 +46,10 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
                         px={4}
                         mb={3}
                         borderRadius={6}
-                        shadow="sm"
+                        shadow="base"
                         bg={cm('white', 'whiteAlpha.200')}
-                        _hover={{ bg: cm('blackAlpha.50', 'whiteAlpha.300') }}
+                        transition="shadow"
+                        _hover={{ bg: cm('gray.100', 'whiteAlpha.300') }}
                     >
                         <Flex align="center">
                             <Flex flex={2} direction="column">
@@ -57,15 +64,12 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
                                     </LinkOverlay>
                                 </Link>
 
-                                {reminder.mileage && (
-                                    <Text fontSize="sm" color={cm('blackAlpha.600', 'whiteAlpha.600')}>
-                                        {formatMileage(reminder.mileage, vehicle.distanceUnit)}
-                                    </Text>
-                                )}
+                                <ReminderSummary
+                                    reminder={reminder}
+                                    distanceUnit={vehicle.distanceUnit}
+                                    fontSize="sm"
+                                />
                             </Flex>
-                            <Text color={isReminderOverdue(reminder) ? cm('red.500', 'red.600') : 'whiteAlpha'} ml={3}>
-                                {reminder.reminderDate ? intlFormatDateUTC(reminder.reminderDate) : null}
-                            </Text>
 
                             <ChevronRightIcon w={5} h={5} ml={2} color={cm('blackAlpha.600', 'whiteAlpha.600')} />
                         </Flex>
@@ -73,7 +77,7 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
                 );
             }))}
 
-            {Boolean(!vehicle?.reminders.length) && (
+            {Boolean(!reminders.length) && !loading && (
                 <>
                     <Heading>
                         No reminders yet
