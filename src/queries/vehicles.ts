@@ -6,17 +6,17 @@ export interface Vehicle {
     name: string;
     vin: string;
     notes: string;
-    position: number;
+    position: number | null;
     enableCost: boolean;
     distanceUnit: 'mi' | 'km';
     retired: boolean;
     createdAt: string;
-    milesPerDay: number;
-    milesPerYear: number;
+    milesPerDay: number | null;
+    milesPerYear: number | null;
     estimatedMileage: number;
     squishVin: number;
     reminders: VehicleReminder[];
-    color: string;
+    color: string | null;
 }
 
 interface VehicleParams {
@@ -24,12 +24,13 @@ interface VehicleParams {
     vin: string;
     notes: string;
     position: number;
-    enable_cost: boolean;
-    distance_unit: 'mi' | 'km';
+    enableCost: boolean;
+    distanceUnit: 'mi' | 'km';
     retired: boolean;
+    color: string | null;
 }
 
-export const vehiclesPath = `/api/vehicles`;
+export const vehiclesPath = '/api/vehicles';
 export const vehiclePath = (vehicleId: number | string) => `/api/vehicles/${vehicleId}`;
 
 export async function fetchVehicles(api: AxiosInstance) {
@@ -56,10 +57,6 @@ export async function destroyVehicle(api: AxiosInstance, vehicleId: number) {
     const { data } = await api.delete(vehiclePath(vehicleId));
     return data;
 }
-
-//   export function exportRecords(vehicleId) {
-//     return get(`/vehicles/${vehicleId}/export`, EXPORT_VEHICLE)
-//   }
 
 //   export function importRecords(vehicleId, params) {
 //     let data = new FormData()
