@@ -1,5 +1,5 @@
 import {
-    Box, FormControl, FormHelperText, FormLabel, Heading, Input, Radio, RadioGroup, Stack, StackDivider, Switch,
+    Box, FormControl, FormHelperText, FormLabel, Heading, Input, LightMode, Radio, RadioGroup, Stack, StackDivider, Switch, useColorModeValue,
 } from '@chakra-ui/react';
 import DestroyButton from 'components/common/DestroyButton';
 import FormErrors from 'components/common/FormErrors';
@@ -20,6 +20,7 @@ export interface VehicleFormProps {
 
 export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
     const router = useRouter();
+    const borderColor = useColorModeValue('gray.200', 'gray.600');
 
     const { formData, register } = useFormData({
         name: '',
@@ -105,7 +106,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
                 </FormSection>
 
                 <FormSection heading="Preferences">
-                    <Stack spacing={3} divider={<StackDivider borderColor="gray.200" />}>
+                    <Stack spacing={4} divider={<StackDivider borderColor={borderColor} />}>
                         <FormControl display="flex" alignItems="center">
                             <FormLabel flex={1} pr={4} m={0} htmlFor="preferences.enableCost">
                                 Enable cost
@@ -113,7 +114,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
                                     Show cost column in History and cost field in form.
                                 </FormHelperText>
                             </FormLabel>
-                            <Switch colorScheme="brand" {...register('preferences.enableCost')} />
+                            <Switch colorScheme="green" {...register('preferences.enableCost')} />
                         </FormControl>
 
                         <FormControl display="flex" alignItems="center">
@@ -123,7 +124,7 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
                                     Receive an email for upcoming reminders 2 weeks before and on the due date.
                                 </FormHelperText>
                             </FormLabel>
-                            <Switch colorScheme="brand" {...register('preferences.sendReminderEmails')} />
+                            <Switch colorScheme="green" {...register('preferences.sendReminderEmails')} />
                         </FormControl>
 
                         <FormControl display="flex" alignItems="center">
@@ -133,7 +134,17 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
                                     Receive an email asking if you recenty performed service based on your record history.
                                 </FormHelperText>
                             </FormLabel>
-                            <Switch colorScheme="brand" {...register('preferences.sendPromptForRecords')} />
+                            <Switch colorScheme="green" {...register('preferences.sendPromptForRecords')} />
+                        </FormControl>
+
+                        <FormControl display="flex" alignItems="center">
+                            <FormLabel flex={1} pr={4} m={0} htmlFor="preferences.showMileageAdjustmentRecords">
+                                Show mileage adjustment records
+                                <FormHelperText mt={0}>
+                                    Show mileage adjustment records in History.
+                                </FormHelperText>
+                            </FormLabel>
+                            <Switch colorScheme="green" {...register('preferences.showMileageAdjustmentRecords')} />
                         </FormControl>
                     </Stack>
                 </FormSection>
