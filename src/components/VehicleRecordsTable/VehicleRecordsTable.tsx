@@ -4,9 +4,10 @@ import {
     Flex, Heading, Skeleton, SkeletonText, Text, useColorModeValue,
 } from '@chakra-ui/react';
 import { intlFormat } from 'date-fns';
+import { mutate } from 'hooks/useMutation';
 import { groupBy } from 'lodash';
 import Link from 'next/link';
-import { VehicleRecord } from 'queries/records';
+import { VehicleRecord, vehicleRecordPath } from 'queries/records';
 import React from 'react';
 import { parseDateISO } from 'utils/date';
 import { formatCurrency } from 'utils/number';
@@ -103,10 +104,12 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                 const yearRecords = recordsByYear[year];
 
                 return (
-                    <Box key={year}>
+                    <Box key={year} mx={-4}>
                         <Heading
+                            borderBottomWidth="1px"
+                            borderBottomColor={headerBorderColor}
                             size="md"
-                            px={[0, null, 4]}
+                            px={4}
                             pb={2}
                         >
                             {year}
@@ -116,8 +119,6 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                                 fontWeight="bold"
                                 fontSize="sm"
                                 color="gray.600"
-                                borderTopWidth="1px"
-                                borderTopColor={headerBorderColor}
                                 borderBottomColor={headerBorderColor}
                                 bg={rowColorAlt}
                                 display={['none', null, 'table-row']}
@@ -134,7 +135,7 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                                 const deltaMileage = nextRecord ? getDeltaMileage(record, nextRecord) : undefined;
 
                                 return (
-                                    <Row key={record.id} bg={i % 2 ? rowColorAlt : 'transparent'}>
+                                    <Row key={record.id} px={4} bg={i % 2 ? rowColorAlt : 'transparent'}>
                                         <Cell
                                             whiteSpace="nowrap"
                                             fontWeight={['bold', null, 'inherit']}
@@ -177,7 +178,16 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
 
                                         <Cell>
                                             <Link passHref href={`/vehicles/${vehicleId}/records/${record.id}/edit`}>
-                                                <Button as="a" size="sm" variant="link" colorScheme="brand">
+                                                <Button
+                                                    as="a"
+                                                    size="sm"
+                                                    variant="link"
+                                                    colorScheme="brand"
+                                                    onClick={() => {
+                                                        // Preload data for edit form
+                                                        mutate(vehicleRecordPath(vehicleId, record.id), record, false);
+                                                    }}
+                                                >
                                                     Edit
                                                 </Button>
                                             </Link>

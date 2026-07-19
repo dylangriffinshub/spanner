@@ -1,7 +1,12 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import applyCaseMiddleware from 'axios-case-converter';
 
-const { PROXY_HOST } = process.env;
+export type RecordID = string | number;
+
+export type MutateParams<T extends { id?: RecordID }> = T & Required<Pick<T, 'id'>>
+
+// eslint-disable-next-line prefer-destructuring
+const PROXY_HOST = process.env.PROXY_HOST;
 const API_VERSION = 2;
 
 export const createAPIRequest = (req?) => {
