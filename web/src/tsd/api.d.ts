@@ -5,7 +5,7 @@ declare namespace API {
 
     type Order = 'asc' | 'desc';
 
-    type DistanceUnit = 'mi' | 'km' | 'hr';
+    type DistanceUnit = 'mi' | 'km' | 'hr' | 'nmi';
 
     type RecordType = 'mileage adjustment';
 
@@ -19,7 +19,7 @@ declare namespace API {
         createdAt: string;
         updatedAt: string;
         recordType: RecordType | null;
-    }
+    };
 
     export type ReminderType = '' | 'date_or_mileage' | 'mileage' | 'date';
 
@@ -32,7 +32,7 @@ declare namespace API {
         mileage: number | null;
         reminderType: ReminderType | null;
         reminderDate: string | null;
-    }
+    };
 
     export interface Session {
         id: string;
@@ -53,8 +53,8 @@ declare namespace API {
         timeZoneOffset: string | null;
         preferences: {
             vehiclesSortOrder: Sortable;
-        }
-    }
+        };
+    };
 
     interface VehiclePreferences {
         enableSharing: boolean;

@@ -18,7 +18,9 @@ const brandShades = {
 };
 
 const shades = Object.keys(brandShades);
-const invertedBrandShades = Object.values(brandShades).reverse().reduce((acc, value, i) => ({ ...acc, [shades[i]]: value }), {});
+const invertedBrandShades = Object.values(brandShades)
+    .reverse()
+    .reduce((acc, value, i) => ({ ...acc, [shades[i]]: value }), {});
 
 export const colors = {
     brand: {
@@ -36,7 +38,8 @@ export default extendTheme({
     styles: {
         global: (props) => ({
             body: {
-                backgroundColor: props.colorMode === 'dark' ? 'gray.800' : 'gray.50',
+                backgroundColor:
+                    props.colorMode === 'dark' ? 'gray.800' : 'gray.50',
             },
         }),
     },
@@ -45,8 +48,8 @@ export default extendTheme({
         useSystemColorMode: false,
     },
     fonts: {
-        heading: 'Lato',
-        body: 'Lato',
+        heading: 'var(--font-lato)',
+        body: 'var(--font-lato)',
     },
     components: {
         Header,

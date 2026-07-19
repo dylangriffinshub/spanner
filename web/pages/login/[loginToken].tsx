@@ -1,6 +1,4 @@
-import {
-    Box, Button, Center, Heading,
-} from '@chakra-ui/react';
+import { Box, Button, Center, Heading } from '@chakra-ui/react';
 import Link from 'next/link';
 import React from 'react';
 import { vehiclesPath } from 'utils/resources';
@@ -32,7 +30,7 @@ const Login: React.FC<LoginProps> = ({ error }) => {
     return <p>Signing in...</p>;
 };
 
-export const getServerSideProps = withSession(async ({ req, res, params }) => {
+export const getServerSideProps = withSession(async ({ req, params }) => {
     const { data, error } = await prefetch(req, (api) => {
         return signIn(api, params?.loginToken as string);
     });

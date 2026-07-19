@@ -1,8 +1,6 @@
 import React from 'react';
 import { ColorModeScript } from '@chakra-ui/react';
-import NextDocument, {
-    Html, Head, Main, NextScript,
-} from 'next/document';
+import NextDocument, { Html, Head, Main, NextScript } from 'next/document';
 import theme from 'theme';
 import Script from 'components/common/Script';
 
@@ -70,15 +68,11 @@ export default class Document extends NextDocument {
                         sizes="192x192"
                         href="/assets/apple-touch-icon-192x192.png"
                     />
-
-                    <link
-                        href="//fonts.googleapis.com/css?family=Lato:300,400,700,900"
-                        rel="stylesheet"
-                        type="text/css"
-                    />
                 </Head>
                 <body>
-                    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+                    <ColorModeScript
+                        initialColorMode={theme.config.initialColorMode}
+                    />
                     <Main />
                     <NextScript />
 
