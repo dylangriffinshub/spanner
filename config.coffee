@@ -24,6 +24,7 @@ config =
         'client/scripts/collections/*'
         'client/scripts/views/*'
         'client/scripts/routers/*'
+        'client/scripts/*.coffee'
         'client/scripts/start.coffee'
       ]
 
@@ -34,6 +35,7 @@ config =
         'node_modules/backbone/backbone.js'
         'bower_components/thorax/thorax.js'
         'node_modules/moment/moment.js'
+        'node_modules/numeral/numeral.js'
         'node_modules/backbone.localstorage/backbone.localStorage.js'
         'bower_components/bootstrap-sass/dist/js/bootstrap.js'
       ]

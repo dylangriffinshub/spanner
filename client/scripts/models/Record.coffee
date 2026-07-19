@@ -1,8 +1,5 @@
-class App.Vehicle extends Thorax.Model
-  validatePresence: ['name']
-
-  defaults:
-    settings: {}
+class App.Record extends Thorax.Model
+  validatePresence: ['date', 'notes']
 
   validate: (attrs) ->
     errors = _.map attrs, (v, k) =>
