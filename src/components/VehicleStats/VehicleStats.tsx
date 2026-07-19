@@ -18,28 +18,36 @@ export const VehicleStats: React.FC<VehicleStatsProps> = ({ vehicle, records }) 
     const [oldestRecord] = sortRecordsOldestFirst(records);
 
     return (
-        <HStack spacing={4} mb={10}>
-            <Stat>
-                <StatLabel>{oldestRecord.notes}</StatLabel>
-                <StatNumber>
-                    {intlFormat(parseDateISO(oldestRecord.date), { month: 'short', year: 'numeric', day: 'numeric' })}
-                </StatNumber>
-            </Stat>
-            <Stat>
-                <StatLabel>Estimated mileage</StatLabel>
-                <StatNumber>{formatEstimatedMileage(vehicle)}</StatNumber>
-            </Stat>
-            <Stat>
-                <StatLabel>Yearly mileage</StatLabel>
-                <StatNumber>{formatMilesPerYear(vehicle)}</StatNumber>
-            </Stat>
-            <Stat>
-                <StatLabel>VIN</StatLabel>
-                <StatNumber>
-                    {vehicle.vin || <Link href={`/vehicles/${vehicle.id}/edit`}>Add VIN...</Link>}
-                </StatNumber>
-            </Stat>
-        </HStack>
+        <Box overflowY="hidden" overflowX="auto" maxW="calc(100vw - 32px)">
+            <HStack spacing={5} mb={10}>
+                {oldestRecord && (
+                    <Stat>
+                        <StatLabel>Since</StatLabel>
+                        <StatNumber minW="max-content">
+                            {intlFormat(parseDateISO(oldestRecord?.date), { month: 'short', year: 'numeric', day: 'numeric' })}
+                        </StatNumber>
+                    </Stat>
+                )}
+                {vehicle.estimatedMileage && (
+                    <Stat>
+                        <StatLabel minW="max-content">Estimated mileage</StatLabel>
+                        <StatNumber minW="max-content">{formatEstimatedMileage(vehicle)}</StatNumber>
+                    </Stat>
+                )}
+                {vehicle.milesPerYear && (
+                    <Stat>
+                        <StatLabel minW="max-content">Yearly mileage</StatLabel>
+                        <StatNumber minW="max-content">{formatMilesPerYear(vehicle)}</StatNumber>
+                    </Stat>
+                )}
+                <Stat>
+                    <StatLabel>VIN</StatLabel>
+                    <StatNumber>
+                        {vehicle.vin || <Link href={`/vehicles/${vehicle.id}/edit`}>Add VIN...</Link>}
+                    </StatNumber>
+                </Stat>
+            </HStack>
+        </Box>
     );
 };
 
