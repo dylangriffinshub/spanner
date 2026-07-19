@@ -7,6 +7,7 @@
 	import Input from '../common/Input.svelte';
 	import Alert from '../common/Alert.svelte';
 	import type { FormError } from '$lib/utils/form';
+	import { getTimeZoneOffset } from '$lib/data/client';
 
 	interface Props {
 		form: ActionData;
@@ -14,6 +15,8 @@
 	}
 
 	type FormErrors = { errors?: FormError[] };
+
+	const tzOffset = getTimeZoneOffset();
 
 	const placeholderEmails = [
 		'lando@cloudcity',
@@ -36,7 +39,7 @@
 
 	let { form, emailEnabled }: Props = $props();
 
-	let mode = $state<'default' | 'password'>('default');
+	let mode = $state<'default' | 'password'>(emailEnabled ? 'default' : 'password');
 	let email = $state('');
 	let password = $state('');
 	let emailError = $state('');
@@ -78,6 +81,7 @@
 	</form>
 {:else}
 	<form method="post" action="?/login" use:enhance class="w-full">
+		<input type="hidden" name="timeZoneOffset" value={tzOffset} />
 		{#if formErrors.length > 0}
 			<Alert class="mb-4">
 				{formErrors[0]?.title || 'Invalid email or password'}
@@ -149,14 +153,16 @@
 				<Button variant="ghost" block href={`/reset-password?email=${encodeURIComponent(email)}`}
 					>Forgot password?</Button
 				>
-				<Button
-					variant="ghost"
-					block
-					onclick={() => {
-						mode = 'default';
-						formErrors = [];
-					}}>Back</Button
-				>
+				{#if emailEnabled}
+					<Button
+						variant="ghost"
+						block
+						onclick={() => {
+							mode = 'default';
+							formErrors = [];
+						}}>Back</Button
+					>
+				{/if}
 			{/if}
 		</div>
 	</form>

@@ -1,4 +1,5 @@
-import { createAPIRequest, type CreatableFields, type RequestOpts } from './client';
+import { request } from './server';
+import type { CreatableFields, RequestOpts } from './types';
 
 export type ReminderType = '' | 'date_or_mileage' | 'mileage' | 'date';
 
@@ -12,8 +13,6 @@ export interface Reminder {
 	reminderType: ReminderType | null;
 	reminderDate: string | null;
 }
-
-const request = createAPIRequest();
 
 export const getAllReminders = (opts: RequestOpts) => {
 	return request<Reminder[]>('/reminders', opts);
@@ -68,15 +67,5 @@ export const deleteReminder = (
 	return request<void>(`/vehicles/${vehicleId}/reminders/${id}`, {
 		...opts,
 		method: 'DELETE',
-	});
-};
-
-export const estimateReminderDate = async (
-	vehicleId: number | string,
-	params: { mileage: number; date: string; reminderType: string },
-): Promise<{ reminderDate: string }> => {
-	return request(`/vehicles/${vehicleId}/reminders/estimate_date`, {
-		method: 'GET',
-		params,
 	});
 };

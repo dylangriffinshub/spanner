@@ -10,9 +10,6 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 
 	return {
-		define: {
-			__HEAD_INJECTIONS__: JSON.stringify(env.HEAD_INJECTIONS ?? ''),
-		},
 		server: {
 			allowedHosts: ['.local', '.ts.net'],
 		},
@@ -37,6 +34,7 @@ export default defineConfig(({ mode }) => {
 					instrumentation: {
 						server: true,
 					},
+					remoteFunctions: true,
 				},
 				adapter: adapter(),
 				version: {

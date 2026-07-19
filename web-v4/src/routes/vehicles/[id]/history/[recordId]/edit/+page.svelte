@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button, Card, Confirm } from '$lib';
+	import { umamiEvent } from '$lib/umami';
 	import VehiclePageLayout from '$lib/components/vehicles/VehiclePageLayout.svelte';
 	import RecordForm from '$lib/components/forms/RecordForm.svelte';
 	import { enhance } from '$app/forms';
@@ -49,15 +50,20 @@
 							<Button danger onclick={() => onOpenChange(true)}>Delete</Button>
 						{/snippet}
 						{#snippet actions({ onOpenChange })}
-							<form method="POST" action="?/delete" use:enhance={() => {
+							<form
+								method="POST"
+								action="?/delete"
+								use:enhance={() => {
 									return async ({ result }) => {
 										if (result.type === 'redirect') {
 											await invalidate(() => true);
 											goto(result.location, { invalidateAll: true });
 										}
 									};
-								}} class="flex flex-row gap-2 flex-1 sm:flex-none">
-								<Button type="submit" danger class="flex-1 sm:flex-none">Delete</Button>
+								}}
+								class="flex flex-row gap-2 flex-1 sm:flex-none"
+							>
+								<Button type="submit" danger class="flex-1 sm:flex-none" {...umamiEvent('delete_record')}>Delete</Button>
 								<Button
 									variant="outline"
 									class="flex-1 sm:flex-none"

@@ -2,13 +2,30 @@
 	import '../app.css';
 	import { version } from '$app/env';
 	import Badge from '$lib/components/common/Badge.svelte';
+	import { getCookieData } from '$lib/utils/cookies';
+	import { initUmami, trackPageView } from '$lib/umami';
+	import { afterNavigate } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
-</script>
 
-<svelte:head>
-	{@html __HEAD_INJECTIONS__}
-</svelte:head>
+	onMount(() => {
+		initUmami();
+
+		const prefs = getCookieData('prefs');
+		const theme = prefs?.theme;
+		if (theme === 'light' || theme === 'dark') {
+			document.documentElement.dataset.theme = theme;
+		} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+			document.documentElement.dataset.theme = 'dark';
+		}
+	});
+
+	afterNavigate(() => {
+		trackPageView($page.route.id);
+	});
+</script>
 
 <div class="min-h-screen flex flex-col">
 	{@render children()}

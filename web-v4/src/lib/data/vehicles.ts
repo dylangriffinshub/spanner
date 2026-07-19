@@ -1,10 +1,5 @@
-import {
-	createAPIRequest,
-	type CreatableFields,
-	type RequestOpts,
-	type UpdatableFields
-} from './client';
-import { apiConfig } from './config';
+import { request } from './server';
+import { type CreatableFields, type RequestOpts, type UpdatableFields } from './types';
 import type { Reminder } from './reminders';
 
 export type DistanceUnit = 'mi' | 'km' | 'hr' | 'nmi';
@@ -41,8 +36,6 @@ export interface Vehicle {
 	preferences: VehiclePreferences;
 }
 
-const request = createAPIRequest(apiConfig);
-
 export const getAllVehicles = async (opts: RequestOpts) => {
 	return request<Vehicle[]>('/vehicles', opts);
 };
@@ -55,25 +48,25 @@ export const createVehicle = async (data: CreatableFields<Vehicle, 'name'>, opts
 	return request<Vehicle>('/vehicles', {
 		...opts,
 		method: 'POST',
-		json: data
+		json: data,
 	});
 };
 
 export const updateVehicle = async (
 	id: number | string,
 	data: UpdatableFields<Vehicle>,
-	opts: RequestOpts
+	opts: RequestOpts,
 ) => {
 	return request<Vehicle>(`/vehicles/${id}`, {
 		...opts,
 		method: 'PUT',
-		json: data
+		json: data,
 	});
 };
 
 export const deleteVehicle = async (id: number | string, opts: RequestOpts) => {
 	return request<void>(`/vehicles/${id}`, {
 		...opts,
-		method: 'DELETE'
+		method: 'DELETE',
 	});
 };
