@@ -1,10 +1,17 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import marked from 'marked'
 import * as vehiclesActions from '../actions/vehiclesActions'
+import * as remindersActions from '../actions/remindersActions'
+import * as recordsActions from '../actions/recordsActions'
+import Router from '../router'
 import Header from './Header'
 import Records from './Records'
 import Reminders from './Reminders'
+import RecordForm from './RecordForm'
+import ReminderForm from './ReminderForm'
+import VehicleForm from './VehicleForm'
+import Notes from './Notes'
+import Modal from './Modal'
 
 export class Vehicle extends Component {
   constructor(props) {
@@ -12,10 +19,71 @@ export class Vehicle extends Component {
 
     this.renderHeaderLeft = this.renderHeaderLeft.bind(this)
     this.renderHeaderCenter = this.renderHeaderCenter.bind(this)
+    this.toggleVehicleMenu = this.toggleVehicleMenu.bind(this)
+    this.handleAddService = this.handleAddService.bind(this)
+    this.handleAddReminder = this.handleAddReminder.bind(this)
+
+    this.state = {
+    }
   }
 
   componentDidMount() {
     this.props.fetchVehicle(this.props.params.id)
+  }
+
+  toggleVehicleMenu(e) {
+    e.preventDefault()
+    Modal.open({
+      el: e.currentTarget,
+      children: (
+        <VehicleForm {...this.props.state.vehicle}
+          onSubmit={(params) => {
+            this.props.updateVehicle(params.id, params)
+              .then(() => Modal.close())
+          }}
+          onConfirmDestroy={(id) => {
+            this.props.destroyVehicle(id)
+              .then(() => {
+                Modal.close()
+                Router.navigate('/vehicles')
+              })
+          }}/>
+      )
+    })
+  }
+
+  handleAddService(e, record) {
+    e.preventDefault()
+    Modal.open({
+      el: e.currentTarget,
+      children: <RecordForm
+        {...record}
+        onSubmit={(props) => {
+          this.props.createRecord(this.props.state.vehicle.id, props)
+          Modal.close()
+        }}
+        onConfirmDestroy={(id) => {
+          this.props.destroyRecord(id)
+          Modal.close()
+        }} />
+    })
+  }
+
+  handleAddReminder(e, reminder) {
+    e.preventDefault()
+    Modal.open({
+      el: e.currentTarget,
+      children: <ReminderForm
+        {...reminder}
+        onSubmit={(props) => {
+          this.props.createReminder(this.props.state.vehicle.id, props)
+          Modal.close()
+        }}
+        onConfirmDestroy={(id) => {
+          this.props.destroyReminder(this.props.state.vehicle.id, id)
+          Modal.close()
+        }} />
+    })
   }
 
   renderHeaderLeft() {
@@ -25,12 +93,8 @@ export class Vehicle extends Component {
           <i className="fa fa-chevron-left"></i>
         </a>
         {' '}
-        <a href="#" className="js-name btn btn-default">
+        <a href="javascript:;" onClick={this.toggleVehicleMenu} className="btn btn-default">
           {this.props.state.vehicle.name}
-        </a>
-        {' '}
-        <a href="#" className="js-settings btn btn-default">
-          Settings
         </a>
       </div>
     )
@@ -58,10 +122,10 @@ export class Vehicle extends Component {
           <div className="row">
             <div className="col-sm-6">
               <nav>
-                <a href="#" className="js-add-service btn btn-secondary">
+                <a href="javascript:;" onClick={this.handleAddService} className="js-add-service btn btn-secondary">
                   + Add Service
                 </a>
-                <a href="#" className="js-add-reminder btn btn-secondary">
+                <a href="javascript:;" onClick={this.handleAddReminder} className="js-add-reminder btn btn-secondary">
                   + Add Reminder
                 </a>
               </nav>
@@ -104,17 +168,11 @@ export class Vehicle extends Component {
                   Notes
                 </h5>
 
-                <div id="vehicle-notes" className="js-edit-vehicle-notes">
-                  {this.props.state.vehicle.notes ? (
-                    <div dangerouslySetInnerHTML={{
-                      __html: marked(this.props.state.vehicle.notes)
-                    }} />
-                  ) : (
-                    <span className="text-muted">
-                      Add notes...
-                    </span>
-                  )}
-                </div>
+                <Notes
+                  notes={this.props.state.vehicle.notes}
+                  onSubmit={(notes) => {
+                    this.props.updateVehicle(this.props.state.vehicle.id, { notes })
+                  }}/>
               </div>
             </div>
           </div>
@@ -128,4 +186,8 @@ export default connect((state, props) => ({
   state: {
     vehicle: state.vehicles.find(v => v.id === +props.params.id) || props.params
   }
-}), vehiclesActions)(Vehicle)
+}), {
+  ...vehiclesActions,
+  ...remindersActions,
+  ...recordsActions,
+})(Vehicle)
