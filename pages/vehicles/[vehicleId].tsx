@@ -20,11 +20,10 @@ export interface VehiclePageProps {
 
 const PageHeader = ({ vehicle }) => (
     <TabsHeader
-        columns={[1, 3]}
         tabs={['Service', 'Notes']}
         LeftComponent={(
             <HStack spacing={2}>
-                <BackButton href="/">
+                <BackButton>
                     Vehicles
                 </BackButton>
 

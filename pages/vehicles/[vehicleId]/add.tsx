@@ -9,7 +9,7 @@ import VehicleActionsMenu from 'components/VehicleActionsMenu';
 import React from 'react';
 import { Vehicle, vehiclePath } from 'queries/vehicles';
 import TabMenu from 'components/TabMenu';
-import NewServiceForm from 'components/NewServiceForm';
+import NewServiceForm from 'components/RecordForm';
 import MileageAdjustmentForm from 'components/MileageAdjustmentForm';
 import NewReminderForm from 'components/NewReminderForm';
 import useRequest from 'hooks/useRequest';
@@ -22,7 +22,6 @@ export type AddPageProps = VehiclePageProps
 
 const PageHeader: React.FC<{ vehicle?: Vehicle }> = ({ vehicle }) => (
     <TabsHeader
-        columns={[1, 1, 3]}
         tabs={[
                 'Add Service',
                 'Add Reminder',
@@ -30,7 +29,7 @@ const PageHeader: React.FC<{ vehicle?: Vehicle }> = ({ vehicle }) => (
             ]}
         LeftComponent={(
             <HStack spacing={2}>
-                <BackButton href={`/vehicles/${vehicle?.id}`}>
+                <BackButton>
                     Back
                 </BackButton>
                 <VehicleActionsMenu vehicle={vehicle} />

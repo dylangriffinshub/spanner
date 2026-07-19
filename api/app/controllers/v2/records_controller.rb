@@ -1,7 +1,11 @@
 module V2
   class RecordsController < ApplicationController
     def index
-      render json: records.all
+      render json: records.all.filter {|r| r.record_type != 'mileage adjustment' }
+    end
+
+    def show
+      render json: records.find(params[:id])
     end
 
     def create
@@ -40,7 +44,7 @@ module V2
     end
 
     def record_params
-      params.require(:record).permit(:date, :cost, :mileage, :notes)
+      params.require(:record).permit(:date, :cost, :mileage, :notes, :record_type)
     end
   end
 end
