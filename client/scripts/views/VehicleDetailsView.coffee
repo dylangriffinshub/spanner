@@ -1,12 +1,22 @@
 class App.VehicleDetailsView extends Thorax.View
   name: 'vehicle_details'
 
+  events:
+    'click .js-refresh-details': 'refresh'
+    'click a[class*=js-]': (e) -> e.preventDefault()
+
   initialize: (id) ->
     @vehicles = App.vehicles
-    $.when(@vehicles.fetch()).then =>
+    if @vehicles.length
       @model = @vehicles.get(id)
+    else
+      @model = new App.Vehicle _id: id
+      @model.fetch()
 
-      @vehicleHeaderView = new App.VehicleHeaderView
-        model: @model
+    @listenTo @model, 'change', @render
 
-      @render()
+    @vehicleHeaderView = new App.VehicleHeaderView
+      model: @model
+
+  refresh: ->
+    @model.save()

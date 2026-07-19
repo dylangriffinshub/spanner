@@ -12,42 +12,39 @@ class App.VehicleView extends Thorax.View
 
   initialize: (id) ->
     @vehicles = App.vehicles
-    $.when(@vehicles.fetch()).then =>
+    if @vehicles.length
       @model = @vehicles.get(id)
+    else
+      @model = new App.Vehicle _id: id
+      @model.fetch()
 
-      @maintenance = new App.MaintenanceSchedule [], vehicleId: id
-      @reminders   = new App.Reminders [], vehicleId: id
-      @collection  = new App.Records [], vehicleId: id
+    @collection  = new App.Records [], vehicleId: id
+    @reminders   = new App.Reminders [], vehicleId: id
 
-      # Listeners
-      @listenTo @model, 'change', @render
+    # Listeners
+    @listenTo @model, 'change', @render
 
-      @listenTo @collection, 'add sync remove', ->
-        @milesPerYear = @collection.milesPerYear()
-        @render()
+    @listenTo @collection, 'add sync remove', ->
+      @milesPerYear = @collection.milesPerYear()
+      @render()
 
-      @listenTo @maintenance, 'sync', ->
-        @model.set
-          recentMilesPerDay: @collection.recentMilesPerDay()
-          currentEstimatedMileage: @collection.currentEstimatedMileage()
+    # Child views
+    @recordsView = new App.RecordsView
+      model: @model
+      collection: @collection
 
-        @nextActions = @maintenance.nextActions()
-        @render()
+    @remindersView = new App.RemindersView
+      collection: @reminders
 
-      # Child views
-      @recordsView = new App.RecordsView
-        collection: @collection
+    @vehicleHeaderView = new App.VehicleHeaderView
+      model: @model
 
-      @remindersView = new App.RemindersView
-        collection: @reminders
+    @nextActionsView = new App.VehicleNextActionsView
+      model: @model
+      collection: @collection
 
-      @vehicleHeaderView = new App.VehicleHeaderView
-        model: @model
-
-      # And go
-      @collection.fetch()
-      @reminders.fetch()
-      @maintenance.fetch()
+    @reminders.fetch()
+    @collection.fetch()
 
   removeRecord: (e) ->
     id = $(e.currentTarget).data('record-id')
@@ -73,6 +70,8 @@ class App.VehicleView extends Thorax.View
         collection: @reminders
 
   showEditVehicleNotesPopover: (e) ->
+    e.preventDefault()
+
     App.popover.toggle
       elem: e.currentTarget
       title: 'Edit Vehicle Notes'

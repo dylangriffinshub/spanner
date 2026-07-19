@@ -1,6 +1,11 @@
 class App.Vehicle extends Thorax.Model
   idAttribute: '_id'
   validatePresence: ['name']
+  url: ->
+    if @id
+      "/api/vehicles/#{@id}"
+    else
+      "/api/vehicles"
 
   settings: ->
     @get('settings') || {}
@@ -18,6 +23,12 @@ class App.Vehicle extends Thorax.Model
           name: k
           message: 'cannot be empty'
         }
+
+    if attrs.vin && attrs.vin.length != 17
+      errors.push {
+        name: 'vin'
+        message: 'must be 17 characters'
+      }
 
     errors = _.compact(errors)
     errors unless _.isEmpty(errors)
