@@ -5,8 +5,8 @@ class Reminder < ApplicationRecord
 
   default_scope { order(date: :asc) }
 
-  before_save :set_estimated_date
-  before_update :set_estimated_date
+  before_save :set_reminder_date!
+  before_update :set_reminder_date!
 
   def mileage_reminder?
     reminder_type == 'mileage'
@@ -16,18 +16,25 @@ class Reminder < ApplicationRecord
     reminder_type == 'date'
   end
 
-  def can_estimate_date?
-    vehicle.estimated_mileage && vehicle.miles_per_day
+  def date_or_mileage_reminder?
+    reminder_type == 'date_or_mileage'
   end
 
-  def set_estimated_date
-    return if date_reminder?
+  def can_estimate_date?
+    mileage && vehicle.estimated_mileage && vehicle.miles_per_day
+  end
 
+  def set_reminder_date!
     if mileage_reminder?
-      self.date = estimate_date
-    else
-      self.date = nil
+      return self.reminder_date = estimate_date
     end
+
+    if date_or_mileage_reminder? and can_estimate_date?
+      reminder_date = date < estimate_date ? date : estimate_date
+      return self.reminder_date = reminder_date
+    end
+
+    self.reminder_date = date
   end
 
   def estimate_date
