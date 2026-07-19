@@ -10,6 +10,21 @@ class Vehicle < ApplicationRecord
   ONE_YEAR = 365
   WEIGHT_COEFFICIENT = 10
 
+  def prompt_for_first_record!
+    return if !prompt_for_records || records.any?
+
+    PromptUserMailer.add_first_record(user, self).deliver_later
+    # TODO: Fix this timing or let people opt out
+    # GoodJob.set(wait: 5.days).perform_later(self, 'prompt_for_first_record!')
+  end
+
+  def prompt_for_new_record!
+    date = estimated_next_record_date
+    return unless date and date <= Date.today.beginning_of_day
+
+    PromptUserMailer.add_record(user, self).deliver_later
+  end
+
   def squish_vin
     return unless vin? && vin.size > 10
     vin[0..7] + vin[9..10]
