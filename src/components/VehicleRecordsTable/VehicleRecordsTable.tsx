@@ -8,11 +8,13 @@ import useInlineColorMode from 'hooks/useInlineColorMode';
 import { mutate } from 'hooks/useMutation';
 import usePageContext from 'hooks/usePageContext';
 import { capitalize, groupBy } from 'lodash';
+import { marked } from 'marked';
 import { recordAPIPath } from 'queries/records';
 import React, { useEffect } from 'react';
 import { parseDateUTC } from 'utils/date';
 import lang from 'utils/lang';
 import { formatCurrency } from 'utils/number';
+import pluralize from 'utils/pluralize';
 import { editRecordPath } from 'utils/resources';
 import { formatMileage, sortRecordsNewestFirst } from 'utils/vehicle';
 
@@ -30,7 +32,7 @@ const getNextRecordWithMileage = (record: API.Record, arr: API.Record[]): API.Re
 };
 
 const getDeltaMileage = (record: API.Record, olderRecord: API.Record): number => {
-    return (record?.mileage ?? 0) - (olderRecord?.mileage ?? 0);
+    return Math.max((record?.mileage ?? 0) - (olderRecord?.mileage ?? 0), 0);
 };
 
 const Row = (props) => {
@@ -130,7 +132,7 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                             <Flex justifyContent="space-between" align="center">
                                 {year}
                                 {!preferences.showMileageAdjustmentRecords && Boolean(omittedCount) && (
-                                    <Tooltip label={`${omittedCount} records ${showMileageAdjustmentRecords ? 'visible' : 'hidden'}`}>
+                                    <Tooltip label={`${pluralize(omittedCount, 'record')} ${showMileageAdjustmentRecords ? 'visible' : 'hidden'}`}>
                                         <Button rightIcon={showMileageAdjustmentRecords ? <ViewIcon /> : <ViewOffIcon />} size="xs" onClick={onToggleShowMileageAdjustment}>
                                             {omittedCount}
                                         </Button>
@@ -202,7 +204,7 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                                         )}
 
                                         <Cell basis={['100%', null]} w="100%" py={[1, 2]}>
-                                            {record.notes}
+                                            <div dangerouslySetInnerHTML={{ __html: marked.parse(record.notes) }} />
                                         </Cell>
 
                                         <Cell justify="end" basis="100%">
