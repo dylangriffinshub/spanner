@@ -1,7 +1,9 @@
+import { sequence } from '@sveltejs/kit/hooks';
+import * as Sentry from '@sentry/sveltekit';
 import { getSession, setSession } from '$lib/utils/session';
 import { redirect, type Handle } from '@sveltejs/kit';
 
-const protectedRoutes = ['^/vehicles'];
+const protectedRoutes = ['^/vehicles', '^/settings'];
 
 const isProtected = (url: string) => {
 	const { pathname } = new URL(url);
@@ -10,7 +12,7 @@ const isProtected = (url: string) => {
 	});
 };
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, resolve }) => {
 	const session = await getSession(event.cookies);
 
 	if (!session?.authToken && isProtected(event.request.url)) {
@@ -32,6 +34,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 				return html.replace('<html', `<html data-theme="${theme}"`);
 			}
 			return html;
-		}
+		},
 	});
-};
+});
+
+export const handleError = Sentry.handleErrorWithSentry();

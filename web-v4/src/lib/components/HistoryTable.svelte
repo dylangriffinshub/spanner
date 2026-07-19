@@ -15,19 +15,21 @@
 	import { onMount } from 'svelte';
 	import Button from './common/Button.svelte';
 	import { pluralize } from '$lib/utils/text';
+	import AttachmentList from './attachments/AttachmentList.svelte';
 
 	interface Props {
 		history: HistoryEntry[];
 		vehicle: Vehicle;
+		editable?: boolean;
 	}
 
-	let { history, vehicle }: Props = $props();
+	let { history, vehicle, editable = true }: Props = $props();
 
-	let showMileageAdjustments = $state(vehicle.preferences.showMileageAdjustmentRecords);
+	let showAdjustments = $state(vehicle.preferences.showMileageAdjustmentRecords);
 
 	const historyNewestFirst = $derived(
 		history
-			.filter((r) => showMileageAdjustments || r.recordType !== 'mileage adjustment')
+			.filter((r) => showAdjustments || r.recordType !== 'mileage adjustment')
 			.toSorted(sortNewestDateFirst),
 	);
 
@@ -88,7 +90,7 @@
 			{#if hiddenCounts[year] > 0}
 				<div class="ml-auto">
 					<Tooltip
-						content={showMileageAdjustments
+						content={showAdjustments
 							? 'Hide mileage adjustments'
 							: `Show ${hiddenCounts[year]} hidden ${pluralize('record', hiddenCounts[year])}`}
 					>
@@ -98,10 +100,10 @@
 								size="xs"
 								color="neutral"
 								variant="ghost"
-								onclick={() => (showMileageAdjustments = !showMileageAdjustments)}
+								onclick={() => (showAdjustments = !showAdjustments)}
 							>
 								<span>{hiddenCounts[year]}</span>
-								{#if showMileageAdjustments}
+								{#if showAdjustments}
 									<Eye size={14} />
 								{:else}
 									<EyeClosed size={14} />
@@ -147,14 +149,21 @@
 					{/if}
 					<Cell class="w-full max-sm:py-1">
 						<Markdown src={record.notes} />
+						{#if record.attachments.length > 0}
+							<div class="mt-2">
+								<AttachmentList attachments={record.attachments} />
+							</div>
+						{/if}
 					</Cell>
 					<Cell class="ml-auto">
-						<a
-							class="text-sm underline text-brand-500 hover:text-brand-600"
-							href={`/vehicles/${vehicle.id}/history/${record.id}/edit`}
-						>
-							Edit
-						</a>
+						{#if editable}
+							<a
+								class="text-sm underline text-brand-500 hover:text-brand-600"
+								href={`/vehicles/${vehicle.id}/history/${record.id}/edit`}
+							>
+								Edit
+							</a>
+						{/if}
 					</Cell>
 				</Row>
 			{/each}
