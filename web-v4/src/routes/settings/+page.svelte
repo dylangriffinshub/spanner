@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { umamiEvent } from '$lib/umami';
-	import { ArrowLeft } from 'lucide-svelte';
-	import { Button, Card, Confirm, Field, Input, PageLayout } from '$lib';
+	import { ArrowLeft, Check } from 'lucide-svelte';
+	import { Button, Card, Confirm, Field, Input, PageLayout, Alert, InputGroup } from '$lib';
 	import type { PageProps } from './$types';
 	import { pageTitle } from '$lib/utils/site';
 
@@ -10,6 +10,9 @@
 
 	let emailSuccess = $derived(form?.emailSuccess);
 	let newEmail = $derived(form?.email ?? '');
+	let webhookSuccess = $derived(form?.webhookSuccess);
+	let webhookTestSuccess = $state(false);
+	let webhookUrl = $state(data.webhookUrl);
 </script>
 
 <svelte:head>
@@ -35,10 +38,10 @@
 			</div>
 
 			{#if emailSuccess}
-				<div class="bg-positive/10 text-positive rounded-md p-4 mb-4">
+				<Alert variant="positive" class="mb-4">
 					Confirmation emails sent to <strong>{newEmail}</strong> and <strong>{data.email}</strong>.
 					Click the link in either email to confirm the change.
-				</div>
+				</Alert>
 			{/if}
 			<form method="post" action="?/changeEmail" use:enhance>
 				<fieldset class="fieldset">
@@ -66,14 +69,14 @@
 			heading={data.passwordEnabled ? 'Change password' : 'Set a password'}
 		>
 			{#if form?.passwordSuccess}
-				<div class="bg-positive/10 text-positive rounded-md p-4 mb-4">
+				<Alert variant="positive" class="mb-4">
 					{#if data.passwordEnabled}
 						Your password has been updated.
 					{:else}
 						Your password has been set. You can now sign in with email + password or continue using
 						magic links.
 					{/if}
-				</div>
+				</Alert>
 			{/if}
 			<form method="post" action="?/changePassword" use:enhance>
 				<fieldset class="fieldset">
@@ -90,16 +93,95 @@
 					</Field>
 				</fieldset>
 				<div class="mt-2">
-					<Button type="submit" {...umamiEvent('update_password')}>{data.passwordEnabled ? 'Update password' : 'Set password'}</Button>
+					<Button type="submit" {...umamiEvent('update_password')}
+						>{data.passwordEnabled ? 'Update password' : 'Set password'}</Button
+					>
 				</div>
 			</form>
 		</Card>
 
-		<Card class="mt-6" variant="outline" bleed heading="Delete Account">
+		<Card class="mt-6" variant="outline" bleed heading="Webhook URL">
+			{#if webhookSuccess}
+				<Alert variant="positive" class="mb-4">Webhook URL updated.</Alert>
+			{/if}
+			<form
+				method="post"
+				action="?/updateWebhook"
+				use:enhance={() =>
+					async ({ result, update }) => {
+						await update();
+						if (result.type === 'success') {
+							webhookUrl = (result.data as { webhookUrl: string }).webhookUrl;
+						}
+					}}
+			>
+				<fieldset class="fieldset">
+					<Field
+						name="webhookUrl"
+						label="Webhook URL"
+						hint="Receive notifications via webhook (e.g. ntfy.sh)."
+						errors={form?.errors}
+					>
+						<InputGroup
+							name="webhookUrl"
+							type="url"
+							bind:value={webhookUrl}
+							oninput={() => (webhookSuccess = false)}
+							autocomplete="off"
+						>
+							{#snippet end()}
+								{#if webhookUrl}
+									{#if webhookTestSuccess}
+										<Check size={16} class="text-positive" />
+									{:else}
+										<Button
+											type="submit"
+											variant="ghost"
+											color="neutral"
+											size="sm"
+											class="-mr-2"
+											onclick={async (e: Event) => {
+												e.preventDefault();
+												const { testWebhook } = await import('./webhook.remote.ts');
+												try {
+													await testWebhook();
+													webhookTestSuccess = true;
+													setTimeout(() => (webhookTestSuccess = false), 2000);
+												} catch {}
+											}}
+										>
+											Test
+										</Button>
+									{/if}
+								{/if}
+							{/snippet}
+						</InputGroup>
+					</Field>
+				</fieldset>
+
+				<div class="mt-2 flex gap-2">
+					<Button type="submit">Save webhook URL</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onclick={() => {
+							const random = Array.from({ length: 12 }, () =>
+								'abcdefghijklmnopqrstuvwxyz0123456789'.charAt(Math.floor(Math.random() * 36)),
+							).join('');
+							webhookUrl = `https://ntfy.sh/spanner-${random}`;
+						}}
+					>
+						Generate URL
+					</Button>
+				</div>
+			</form>
+		</Card>
+
+		<Card class="mt-6" variant="outline" bleed heading="Danger Zone">
 			<fieldset>
 				<div class="flex items-center justify-between gap-6">
 					<div>
-						<span class="font-medium">Permanently delete your account</span>
+						<span class="font-medium">Permanently delete account</span>
 						<p class="text-sm text-ink-500">
 							Your vehicles, records, and all data will be deleted. You can sign in again within 30
 							days to restore your account.
@@ -107,15 +189,22 @@
 					</div>
 					<Confirm title="Delete account?">
 						{#snippet trigger({ onOpenChange })}
-							<Button danger onclick={() => onOpenChange(true)}>Delete</Button>
+							<Button color="danger" variant="outline" onclick={() => onOpenChange(true)}
+								>Delete Account</Button
+							>
 						{/snippet}
 						{#snippet actions({ onOpenChange })}
 							<form method="post" class="flex flex-row gap-2 flex-1 sm:flex-none">
-								<Button type="submit" formaction="?/delete" danger class="flex-1 sm:flex-none"
+								<Button
+									type="submit"
+									formaction="?/delete"
+									color="danger"
+									variant="outline"
+									class="flex-1 sm:flex-none"
 									{...umamiEvent('delete_account')}>Delete Account</Button
 								>
 								<Button
-									variant="outline"
+									variant="solid"
 									class="flex-1 sm:flex-none"
 									onclick={() => onOpenChange(false)}
 								>

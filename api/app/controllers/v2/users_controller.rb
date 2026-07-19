@@ -23,8 +23,7 @@ module V2
 
       current_user.request_email_change!(new_email)
 
-      mailer_host = params[:host].presence || request.base_url
-      EmailChangeMailer.confirm_email(current_user, host: mailer_host).deliver_later
+      EmailChangeMailer.confirm_email(current_user).deliver_later
       EmailChangeMailer.notify_old_email(current_user).deliver_later
 
       head :no_content
@@ -118,7 +117,8 @@ module V2
         .require(:user)
         .permit(:time_zone_offset,
                 preferences: [
-                  { vehicles_sort_order: [] }
+                  { vehicles_sort_order: [] },
+                  :webhook_url
                 ])
     end
   end

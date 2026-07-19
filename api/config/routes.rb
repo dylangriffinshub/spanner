@@ -5,6 +5,24 @@ require 'constraints/api_constraint'
 Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   root 'status#index'
 
+  direct :web_root do
+    Rails.application.config.x.web_url
+  end
+
+  direct :web_vehicle, vehicle: nil do |options|
+    "#{Rails.application.config.x.web_url}/vehicles/#{options[:vehicle].id}"
+  end
+
+  direct :web_preferences, token: nil, vehicle_id: nil do |options|
+    path = "/preferences/#{options[:token]}"
+    path += "?vehicle_id=#{options[:vehicle_id]}" if options[:vehicle_id]
+    "#{Rails.application.config.x.web_url}#{path}"
+  end
+
+  direct :web_reset_password, token: nil do |options|
+    "#{Rails.application.config.x.web_url}/reset-password/#{options[:token]}"
+  end
+
   scope module: :v2 do
     post 'sessions', to: 'sessions#create'
     post 'login', to: 'logins#create', as: nil
@@ -21,12 +39,14 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
     post 'password/reset/:token', to: 'passwords#reset'
 
     post 'webhooks/postmark', to: 'postmark#webhook'
+    post 'webhooks/test', to: 'webhooks#test'
   end
 
   scope module: :v2, constraints: ApiConstraint.new(version: 2) do
-    resources :classifications, only: :index
+    resources :classifications, only: %i[index update destroy]
 
     resources :vehicles do
+      resources :classifications, only: %i[index create]
       resources :service_schedules do
         post :complete, on: :member
       end
@@ -39,13 +59,18 @@ Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
 
       resources :records do
         delete 'attachments/:signed_id', to: 'records#destroy_attachment', as: :attachment
+        resources :record_classifications, only: %i[create destroy]
       end
+
+      post :reclassify, on: :member, controller: 'reclassify'
 
       post :import
       get :export
     end
 
     resources :reminders, only: :index
+
+    get 'service_schedules/presets', to: 'service_schedule_presets#index'
 
     get 'user', to: 'users#index'
     put 'user', to: 'users#update'

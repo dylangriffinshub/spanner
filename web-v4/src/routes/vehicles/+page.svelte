@@ -32,7 +32,9 @@
 	);
 
 	let user = $derived(form?.user ?? data.user);
-	let vehiclesSortOrder = $state<Sortable>(user.preferences.vehiclesSortOrder);
+	let vehiclesSortOrder = $derived<Sortable>(
+		user.preferences.vehiclesSortOrder ?? ['created_at', 'desc'],
+	);
 </script>
 
 <svelte:head>
@@ -46,7 +48,7 @@
 	{#if data.vehicles.length === 0}
 		<EmptyState
 			heading="Add your first vehicle"
-			details="Track maintenance, reminders, and service history for all your vehicles."
+			details="Track maintenance, reminders, and service history."
 		>
 			{#snippet media()}
 				<Car size={48} class="text-ink-300" />

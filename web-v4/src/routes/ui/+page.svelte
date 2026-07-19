@@ -1,6 +1,6 @@
-<script>
-	import { Button, Clipboard, Field, Input, InputGroup, PageLayout, Alert } from '$lib';
-	import { Mail, Search } from 'lucide-svelte';
+<script lang="ts">
+	import { Badge, Button, Clipboard, Field, Input, InputGroup, PageLayout, Alert } from '$lib';
+	import { Mail, Search, X } from 'lucide-svelte';
 </script>
 
 <PageLayout>
@@ -26,6 +26,8 @@
 					<div class="flex-row">
 						<Button color="brand">Brand</Button>
 						<Button color="neutral">Neutral</Button>
+						<Button color="danger">Danger</Button>
+						<Button color="danger" disabled>Danger</Button>
 					</div>
 				</div>
 				<div class="examples">
@@ -33,6 +35,8 @@
 					<div class="flex-row">
 						<Button variant="outline" color="brand">Brand</Button>
 						<Button variant="outline" color="neutral">Neutral</Button>
+						<Button variant="outline" color="danger">Danger</Button>
+						<Button variant="outline" color="danger" disabled>Danger</Button>
 					</div>
 				</div>
 				<div class="examples">
@@ -40,31 +44,8 @@
 					<div class="flex-row">
 						<Button variant="ghost" color="brand">Brand</Button>
 						<Button variant="ghost" color="neutral">Neutral</Button>
-					</div>
-				</div>
-			</div>
-
-			<div class="group">
-				<h3>Danger</h3>
-				<div class="examples">
-					<h4>Solid</h4>
-					<div class="flex-row">
-						<Button danger variant="solid">Delete</Button>
-						<Button danger variant="solid" disabled>Delete</Button>
-					</div>
-				</div>
-				<div class="examples">
-					<h4>Outline</h4>
-					<div class="flex-row">
-						<Button danger variant="outline">Delete</Button>
-						<Button danger variant="outline" disabled>Delete</Button>
-					</div>
-				</div>
-				<div class="examples">
-					<h4>Ghost</h4>
-					<div class="flex-row">
-						<Button danger variant="ghost">Delete</Button>
-						<Button danger variant="ghost" disabled>Delete</Button>
+						<Button variant="ghost" color="danger">Danger</Button>
+						<Button variant="ghost" color="danger" disabled>Danger</Button>
 					</div>
 				</div>
 			</div>
@@ -156,6 +137,32 @@
 					<InputGroup name="inline-end" placeholder="Email">
 						{#snippet end()}<Mail size={16} />{/snippet}
 					</InputGroup>
+					<InputGroup name="inline-end-sm" placeholder="Small" size="sm">
+						{#snippet end()}
+							<Button
+								variant="solid"
+								size="xs"
+								icon
+								class="-mr-2"
+								onpointerdown={(e: PointerEvent) => e.stopPropagation()}
+							>
+								<X size={12} />
+							</Button>
+						{/snippet}
+					</InputGroup>
+					<InputGroup name="inline-end-md" placeholder="Medium">
+						{#snippet end()}
+							<Button
+								variant="solid"
+								size="sm"
+								icon
+								class="-mr-2"
+								onpointerdown={(e: PointerEvent) => e.stopPropagation()}
+							>
+								<X size={14} />
+							</Button>
+						{/snippet}
+					</InputGroup>
 				</div>
 			</div>
 
@@ -202,6 +209,44 @@
 				<div class="examples">
 					<Alert variant="warning" dismissible>Reminder is overdue. Dismiss this notice.</Alert>
 					<Alert variant="info" dismissible>No new records this week.</Alert>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h2>Badge</h2>
+
+			<div class="group">
+				<h3>Variants</h3>
+				<div class="examples flex-row!">
+					<Badge variant="neutral">Default</Badge>
+					<Badge variant="warning">Warning</Badge>
+				</div>
+			</div>
+
+			<div class="group">
+				<h3>Pill</h3>
+				<div class="examples flex-row!">
+					<Badge pill>Default</Badge>
+					<Badge variant="warning" pill>Warning</Badge>
+				</div>
+			</div>
+
+			<div class="group">
+				<h3>Dismissible</h3>
+				<div class="examples flex-row!">
+					<Badge dismissible>Default</Badge>
+					<Badge variant="warning" dismissible>Warning</Badge>
+					<Badge variant="warning" pill dismissible>3</Badge>
+				</div>
+			</div>
+
+			<div class="group">
+				<h3>With count</h3>
+				<div class="examples flex-row!">
+					<Badge variant="warning" pill>3</Badge>
+					<Badge pill>12</Badge>
+					<Badge variant="warning">42</Badge>
 				</div>
 			</div>
 		</section>
