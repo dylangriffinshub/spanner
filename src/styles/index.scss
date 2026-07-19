@@ -1,3 +1,4 @@
+@import 'functions';
 @import 'variables';
 @import '~bootstrap-sass/assets/stylesheets/bootstrap';
 // @import 'bootstrap-datepicker/css/datepicker3';
@@ -9,6 +10,7 @@
 @import 'buttons';
 
 @import 'layout';
+@import 'header';
 @import 'welcome';
 @import 'vehicles';
 @import 'popover';
