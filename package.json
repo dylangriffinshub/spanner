@@ -38,6 +38,7 @@
     "papaparse": "^4.0.5",
     "passwordless": "^1.0.7",
     "passwordless-mongostore": "^0.1.0",
+    "postmark": "^0.2.6",
     "thorax": "^2.2.1"
   }
 }

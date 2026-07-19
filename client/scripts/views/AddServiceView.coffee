@@ -5,14 +5,16 @@ class App.AddServiceView extends Thorax.View
     'submit form': 'createOrUpdateRecord'
     'click [data-destroy]': 'destroyRecord'
     'rendered': ->
-      @$('textarea').autosize()
-      @$('input[name=date]').datepicker({
-        autoclose: true
-      })
+      _.delay =>
+        @$('textarea').autosize()
+        @$('input[name=date]').datepicker({
+          format: 'mm-dd-yyyy'
+          autoclose: true
+        })
 
   initialize: ->
-    @date = moment().format('MM-DD-YYYY')
     unless @model
+      @date = moment().utc().format('MM-DD-YYYY')
       @currentEstimatedMileage = @collection.currentEstimatedMileage()
 
   destroyRecord: (e) ->

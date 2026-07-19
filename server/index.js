@@ -5,19 +5,12 @@ var expressSession = require('express-session');
 var mongoose       = require('mongoose');
 var passwordless   = require('passwordless');
 var MongoStore     = require('passwordless-mongostore');
-var email          = require('emailjs');
+
+var postmark = require("postmark")(process.env.POSTMARK_API_KEY);
 
 var vehicleRoutes = require('./app/routes/vehicle');
 var sessionRoutes = require('./app/routes/session');
 var app           = express();
-
-var smtpOptions = {
-  user: process.env.SMTP_EMAIL || process.env.SENDGRID_USERNAME,
-  password: process.env.SMTP_PASSWORD || process.env.SENDGRID_PASSWORD,
-  host: process.env.SMTP_HOST || process.env.SENDGRID_HOST,
-  ssl: true
-};
-var smtpServer = email.server.connect(smtpOptions);
 
 var mongoDbPath = process.env.MONGOLAB_URI || 'mongodb://localhost/service-records';
 mongoose.connect(mongoDbPath);
@@ -29,18 +22,18 @@ passwordless.init(new MongoStore(mongoDbPath), {
 });
 passwordless.addDelivery(
   function(tokenToSend, uidToSend, recipient, callback) {
-      smtpServer.send({
-         text: 'Hello '+ recipient +'!\nYou can now access your vehicles here: ' +
-              'http://' + host + '/#login/' +
-              encodeURIComponent(uidToSend) + '/' +
-              tokenToSend,
-         from:    smtpOptions.user,
-         to:      recipient,
-         subject: 'Login to Spanner'
-      }, function(err, message) {
-          if (err) console.log(err);
-          callback(err);
-      });
+    postmark.send({
+      "TextBody": 'Hello '+ recipient +'!\nYou can now access your vehicles here: ' +
+        'http://' + host + '/#login/' +
+        encodeURIComponent(uidToSend) + '/' +
+        tokenToSend,
+      "From": 'spanner@nicinabox.com',
+      "To": recipient,
+      "Subject": 'Login to Spanner'
+    }, function(err, message) {
+      if (err) console.log(err);
+      callback(err);
+    });
   }, {
     ttl: 1000 * 60 * 1440 * 30 // 30 days
   });
