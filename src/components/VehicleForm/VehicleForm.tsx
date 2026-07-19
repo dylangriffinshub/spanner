@@ -3,12 +3,12 @@ import {
 } from '@chakra-ui/react';
 import FormErrors from 'components/FormErrors';
 import useFormData from 'hooks/useFormData';
-import { useMutation } from 'hooks/useRequest';
+import useMutation from 'hooks/useMutation';
 import { useRouter } from 'next/router';
 import {
     createVehicle, destroyVehicle, updateVehicle, Vehicle,
 } from 'queries/vehicles';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export interface VehicleFormProps {
     vehicle?: Vehicle;
@@ -21,11 +21,15 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({ vehicle }) => {
 
     const onClose = () => setIsConfirmDeleteOpen(false);
 
-    const { formData, getFormFieldProps } = useFormData({
+    const { formData, getFormFieldProps, setFormData } = useFormData({
         name: vehicle?.name ?? '',
         vin: vehicle?.vin ?? '',
         enableCost: vehicle?.enableCost ?? true,
     });
+
+    useEffect(() => {
+        if (vehicle) setFormData({ ...vehicle });
+    }, [vehicle]);
 
     const { mutate: createOrUpdateVehicle, isProcessing, error } = useMutation((api, params) => {
         if (vehicle) {

@@ -1,9 +1,10 @@
 import {
-    Text, Table, Thead, Tr, Th, Tbody, Td,
+    Text, Table, Thead, Tr, Th, Tbody, Td, Skeleton,
 } from '@chakra-ui/react';
-import { format } from 'date-fns';
+import { intlFormat } from 'date-fns';
 import { VehicleRecord } from 'queries/records';
 import React from 'react';
+import { parseDateISO } from 'utils/date';
 import { formatCurrency } from 'utils/number';
 import { formatMileage, sortRecordsNewestFirst } from 'utils/vehicle';
 
@@ -31,6 +32,33 @@ const getDeltaMileage = (record: VehicleRecord, olderRecord: VehicleRecord): num
     return record.mileage - olderRecord.mileage;
 };
 
+export const SkeletonVehicleRecordsTable = () => (
+    <Table size="sm">
+        <Thead>
+            <Tr>
+                <Th>Date</Th>
+                <Th>Mileage</Th>
+                <Th>Notes</Th>
+            </Tr>
+        </Thead>
+        <Tbody>
+            {[1,2,3].map((n) => (
+                <Tr key={n}>
+                    <Td w={100}>
+                        <Skeleton h={3} />
+                    </Td>
+                    <Td w={100}>
+                        <Skeleton h={3} />
+                    </Td>
+                    <Td>
+                        <Skeleton h={3} w={300} />
+                    </Td>
+                </Tr>
+            ))}
+        </Tbody>
+    </Table>
+)
+
 export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({ records, enableCost, distanceUnit }) => {
     const reverseChronoRecords = sortRecordsNewestFirst(records);
 
@@ -52,7 +80,7 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({ record
                     return (
                         <Tr key={record.id}>
                             <Td whiteSpace="nowrap" w={100}>
-                                {format(new Date(record.date), 'MMM dd, yyy')}
+                                {intlFormat(parseDateISO(record.date), { month: 'short', year: 'numeric', day: 'numeric' })}
                             </Td>
                             {enableCost && (
                                 <Td whiteSpace="nowrap" w={100}>
