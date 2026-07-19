@@ -2,9 +2,8 @@ import {
     Stat, StatLabel, StatNumber, Box, HStack, Text,
 } from '@chakra-ui/react';
 import { intlFormat } from 'date-fns';
+import usePageContext from 'hooks/usePageContext';
 import Link from 'next/link';
-import { VehicleRecord } from 'queries/records';
-import { Vehicle } from 'queries/vehicles';
 import React from 'react';
 import { parseDateUTC } from 'utils/date';
 import lang from 'utils/lang';
@@ -12,8 +11,8 @@ import { editVehiclePath } from 'utils/resources';
 import { formatEstimatedMileage, formatMilesPerYear, sortRecordsOldestFirst } from 'utils/vehicle';
 
 export interface VehicleStatsProps {
-    vehicle: Vehicle;
-    records: VehicleRecord[];
+    vehicle: API.Vehicle;
+    records: API.Record[];
 }
 
 export const VehicleStat = ({ label, children, ...props }) => (
@@ -26,6 +25,7 @@ export const VehicleStat = ({ label, children, ...props }) => (
 );
 
 export const VehicleStats: React.FC<VehicleStatsProps> = ({ vehicle, records }) => {
+    const { isShared } = usePageContext();
     const [oldestRecord] = sortRecordsOldestFirst(records);
 
     return (
@@ -47,11 +47,11 @@ export const VehicleStats: React.FC<VehicleStatsProps> = ({ vehicle, records }) 
                     </VehicleStat>
                 )}
                 <VehicleStat label="VIN">
-                    {vehicle.vin || (
+                    {vehicle.vin || (isShared ? '--' : (
                         <Link href={editVehiclePath(vehicle.id)} passHref>
                             <Text as="a" color="brand.primary">Add VIN...</Text>
                         </Link>
-                    )}
+                    ))}
                 </VehicleStat>
             </HStack>
         </Box>

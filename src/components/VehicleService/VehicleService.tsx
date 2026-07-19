@@ -5,14 +5,17 @@ import {
 import EmptyState from 'components/common/EmptyState';
 import LinkButton from 'components/common/LinkButton';
 import Search from 'components/Search';
+import VehicleColorIndicator from 'components/VehicleColorIndicator';
 import VehicleRecordsTable from 'components/VehicleRecordsTable';
 import VehicleStats from 'components/VehicleStats';
 import { intlFormat } from 'date-fns';
+import usePageContext from 'hooks/usePageContext';
 import useRequest from 'hooks/useRequest';
 import useSearchQuery from 'hooks/useSearchQuery';
+import { toNumber } from 'lodash';
 import qs from 'qs';
-import { VehicleRecord, recordsAPIPath } from 'queries/records';
-import { Vehicle, vehicleAPIPath } from 'queries/vehicles';
+import { recordsAPIPath } from 'queries/records';
+import { vehicleAPIPath } from 'queries/vehicles';
 import React from 'react';
 import { parseDateUTC } from 'utils/date';
 import { vehicleAddPath, vehicleImportPath } from 'utils/resources';
@@ -22,14 +25,16 @@ export interface VehicleServiceProps {
 }
 
 export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => {
-    const { data: vehicle, loading: vehicleLoading } = useRequest<Vehicle>(vehicleAPIPath(vehicleId));
-    const { data: records, loading: recordsLoading } = useRequest<VehicleRecord[]>(recordsAPIPath(vehicleId));
+    const { isShared } = usePageContext();
+
+    const { data: vehicle, loading: vehicleLoading } = useRequest<API.Vehicle>(vehicleAPIPath(vehicleId, isShared));
+    const { data: records, loading: recordsLoading } = useRequest<API.Record[]>(recordsAPIPath(vehicleId, isShared));
 
     const { searchQuery, queryResults, setSearchQuery } = useSearchQuery(records, (item, query) => {
         const re = new RegExp(query, 'gi');
         const date = intlFormat(parseDateUTC(item.date), { month: 'short', year: 'numeric', day: 'numeric' });
 
-        return re.test(item.notes) || re.test(date) || re.test(item.mileage.toString());
+        return re.test(item.notes) || re.test(date) || re.test(toNumber(item.mileage).toString());
     });
 
     const anyLoading = vehicleLoading || recordsLoading;
@@ -40,7 +45,7 @@ export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => 
         setSearchQuery(text);
     };
 
-    if (isEmpty) {
+    if (isEmpty && !isShared) {
         return (
             <EmptyState
                 heading="Add your vehicle's history"
@@ -59,14 +64,30 @@ export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => 
         );
     }
 
+    if (isEmpty && isShared) {
+        return (
+            <EmptyState
+                heading="No history yet"
+                details="This vehicle is being shared but doesn't have any history yet."
+            />
+        );
+    }
+
     return (
         <Container maxW="container.lg">
+            {isShared && vehicle && (
+                <HStack spacing={2} mb={10}>
+                    <VehicleColorIndicator size={8} color={vehicle?.color} />
+                    <Heading size="lg">{vehicle?.name}</Heading>
+                </HStack>
+            )}
+
             {vehicle && records && (
                 <VehicleStats vehicle={vehicle} records={records} />
             )}
 
             <Flex mb={6} direction="row-reverse">
-                {!vehicle?.retired && (
+                {!vehicle?.retired && !isShared && (
                     <Flex>
                         <LightMode>
                             <LinkButton href={vehicleAddPath(vehicleId)} size="md" leftIcon={<AddIcon />} shadow="lg">
@@ -75,7 +96,7 @@ export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => 
                         </LightMode>
                     </Flex>
                 )}
-                <Spacer minW={vehicle?.retired ? [null] : [4, null]} />
+                <Spacer minW={vehicle?.retired || isShared ? [null] : [4, null]} />
                 <Search onChangeText={handleSearch} />
             </Flex>
 

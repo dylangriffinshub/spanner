@@ -1,14 +1,14 @@
-import { UpDownIcon } from '@chakra-ui/icons';
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import {
-    Box, Button, Flex, Heading, Skeleton, SkeletonText, Text, useDisclosure,
+    Box, Button, Flex, Heading, Skeleton, SkeletonText, Text, Tooltip, useDisclosure,
 } from '@chakra-ui/react';
 import LinkButton from 'components/common/LinkButton';
 import { intlFormat } from 'date-fns';
 import useInlineColorMode from 'hooks/useInlineColorMode';
 import { mutate } from 'hooks/useMutation';
+import usePageContext from 'hooks/usePageContext';
 import { capitalize, groupBy } from 'lodash';
-import { VehicleRecord, recordAPIPath } from 'queries/records';
-import { DistanceUnit, VehiclePreferences } from 'queries/vehicles';
+import { recordAPIPath } from 'queries/records';
 import React, { useEffect } from 'react';
 import { parseDateUTC } from 'utils/date';
 import lang from 'utils/lang';
@@ -17,21 +17,20 @@ import { editRecordPath } from 'utils/resources';
 import { formatMileage, sortRecordsNewestFirst } from 'utils/vehicle';
 
 export interface VehicleRecordsTableProps {
-    records: VehicleRecord[] | undefined;
+    records: API.Record[] | undefined;
     vehicleId: string;
-    preferences?: VehiclePreferences;
-    distanceUnit?: DistanceUnit;
+    preferences?: API.VehiclePreferences;
+    distanceUnit?: API.DistanceUnit;
     isLoaded?: boolean;
 }
 
-const getNextRecordWithMileage = (record: VehicleRecord, arr: VehicleRecord[]): VehicleRecord | undefined => {
+const getNextRecordWithMileage = (record: API.Record, arr: API.Record[]): API.Record | undefined => {
     const idx = arr.findIndex((r) => r.id === record.id);
     return arr[idx + 1];
 };
 
-const getDeltaMileage = (record: VehicleRecord, olderRecord: VehicleRecord): number | undefined => {
-    if (!record.mileage) return undefined;
-    return record.mileage - olderRecord.mileage;
+const getDeltaMileage = (record: API.Record, olderRecord: API.Record): number => {
+    return (record?.mileage ?? 0) - (olderRecord?.mileage ?? 0);
 };
 
 const Row = (props) => {
@@ -70,6 +69,8 @@ const FlexTable = (props) => (
 export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
     records, vehicleId, preferences = {}, distanceUnit = 'mi',
 }) => {
+    const { isShared } = usePageContext();
+
     const reverseChronoRecords = sortRecordsNewestFirst(records ?? []);
     const recordsByYear = groupBy(reverseChronoRecords, (r) => new Date(r.date).getFullYear());
     const years = Object.keys(recordsByYear).sort((a, b) => Number(b) - Number(a));
@@ -129,10 +130,11 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                             <Flex justifyContent="space-between" align="center">
                                 {year}
                                 {!preferences.showMileageAdjustmentRecords && Boolean(omittedCount) && (
-                                    <Button rightIcon={<UpDownIcon />} size="xs" onClick={onToggleShowMileageAdjustment}>
-                                        {omittedCount}
-                                        {omittedCount > 1 ? 's' : ''}
-                                    </Button>
+                                    <Tooltip label={`${omittedCount} records ${showMileageAdjustmentRecords ? 'visible' : 'hidden'}`}>
+                                        <Button rightIcon={showMileageAdjustmentRecords ? <ViewIcon /> : <ViewOffIcon />} size="xs" onClick={onToggleShowMileageAdjustment}>
+                                            {omittedCount}
+                                        </Button>
+                                    </Tooltip>
                                 )}
                             </Flex>
                         </Heading>
@@ -204,18 +206,20 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                                         </Cell>
 
                                         <Cell justify="end" basis="100%">
-                                            <LinkButton
-                                                href={editRecordPath(vehicleId, record.id)}
-                                                size="sm"
-                                                variant="link"
-                                                py={[1, null]}
-                                                onClick={() => {
-                                                    // Preload data for edit form
-                                                    mutate(recordAPIPath(vehicleId, record.id), record, false);
-                                                }}
-                                            >
-                                                Edit
-                                            </LinkButton>
+                                            {!isShared && (
+                                                <LinkButton
+                                                    href={editRecordPath(vehicleId, record.id)}
+                                                    size="sm"
+                                                    variant="link"
+                                                    py={[1, null]}
+                                                    onClick={() => {
+                                                        // Preload data for edit form
+                                                        mutate(recordAPIPath(vehicleId, record.id), record, false);
+                                                    }}
+                                                >
+                                                    Edit
+                                                </LinkButton>
+                                            )}
                                         </Cell>
                                     </Row>
                                 );

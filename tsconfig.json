@@ -18,7 +18,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "strictNullChecks": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "typeRoots": [
+      "tsd"
+    ],
+    "incremental": true
   },
   "include": [
     "next-env.d.ts",
