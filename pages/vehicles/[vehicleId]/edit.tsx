@@ -1,16 +1,13 @@
-import {
-    HStack, Button, Container, Tab, TabPanel, TabPanels, Tabs, Heading,
-} from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
-import Link from 'next/link';
-import Header from 'components/Header';
-import Page from 'components/Page';
+import { Container, Heading, HStack } from '@chakra-ui/react';
+import BackButton from 'components/common/BackButton';
+import Header from 'components/common/Header';
+import LinkPreload from 'components/common/LinkPreload';
+import Page from 'components/common/Page';
+import VehicleForm from 'components/forms/VehicleForm';
 import VehicleActionsMenu from 'components/VehicleActionsMenu';
-import React from 'react';
-import { Vehicle, vehiclePath } from 'queries/vehicles';
 import useRequest from 'hooks/useRequest';
-import VehicleForm from 'components/VehicleForm';
-import LinkPreload from 'components/LinkPreload';
+import { Vehicle, vehiclePath } from 'queries/vehicles';
+import React from 'react';
 import { VehiclePageProps } from '../[vehicleId]';
 
 export type EditVehiclePageProps = VehiclePageProps
@@ -24,17 +21,9 @@ export const EditVehiclePage: React.FC<EditVehiclePageProps> = ({ params }) => {
                 <Header
                     LeftComponent={(
                         <HStack spacing={2}>
-                            <Link href={`/vehicles/${vehicle?.id}`} passHref>
-                                <Button
-                                    as="a"
-                                    leftIcon={<ArrowBackIcon />}
-                                    size="sm"
-                                    variant="solid"
-                                    colorScheme="gray"
-                                >
-                                    Back
-                                </Button>
-                            </Link>
+                            <BackButton>
+                                Back
+                            </BackButton>
                             <VehicleActionsMenu vehicle={vehicle} />
                         </HStack>
                       )}

@@ -1,8 +1,8 @@
 import { HStack, TabPanel, TabPanels } from '@chakra-ui/react';
-import BackButton from 'components/BackButton';
-import LinkPreload from 'components/LinkPreload';
-import Page from 'components/Page';
-import TabsHeader from 'components/TabsHeader';
+import BackButton from 'components/common/BackButton';
+import LinkPreload from 'components/common/LinkPreload';
+import Page from 'components/common/Page';
+import TabsHeader from 'components/common/TabsHeader';
 import VehicleActionsMenu from 'components/VehicleActionsMenu';
 import VehicleNotes from 'components/VehicleNotes';
 import VehicleReminders from 'components/VehicleReminders';
@@ -11,7 +11,7 @@ import useRequest from 'hooks/useRequest';
 import { vehicleRecordsPath } from 'queries/records';
 import { Vehicle, vehiclePath } from 'queries/vehicles';
 import React from 'react';
-import { isReminderOverdue } from 'utils/reminders';
+import { getOverdueRemindersCount } from 'utils/reminders';
 import { authRedirect, withSession } from 'utils/session';
 
 export interface VehiclePageProps {
@@ -20,12 +20,13 @@ export interface VehiclePageProps {
     }
 }
 
-const PageHeader = ({ vehicle, overDueReminders }) => (
+const PageHeader = ({ vehicle, overDueRemindersBadge }) => (
     <TabsHeader
+        hashchange
         tabs={
             [
                 'Service',
-                { text: 'Reminders', badge: overDueReminders.length, badgeSentiment: 'negative' },
+                { text: 'Reminders', badge: overDueRemindersBadge, badgeSentiment: 'negative' },
                 'Notes',
             ]
         }
@@ -47,7 +48,7 @@ const VehiclePage: React.FC<VehiclePageProps> = ({ params }) => {
     return (
         <Page
             p={0}
-            Header={<PageHeader vehicle={vehicle} overDueReminders={vehicle?.reminders.filter(isReminderOverdue) ?? []} />}
+            Header={<PageHeader vehicle={vehicle} overDueRemindersBadge={vehicle ? getOverdueRemindersCount(vehicle) : undefined} />}
         >
             <LinkPreload path={[
                 vehiclePath(params.vehicleId),

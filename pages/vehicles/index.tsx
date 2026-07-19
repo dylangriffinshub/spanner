@@ -2,18 +2,18 @@ import { AddIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import {
     Box, Button, Center, Flex, Heading, HStack, SimpleGrid,
 } from '@chakra-ui/react';
-import ColorModeButton from 'components/ColorModeButton';
-import Header from 'components/Header';
-import LinkPreload from 'components/LinkPreload';
+import ColorModeButton from 'components/common/ColorModeButton';
+import Header from 'components/common/Header';
+import LinkPreload from 'components/common/LinkPreload';
 import Logo from 'components/Logo';
-import Page from 'components/Page';
+import Page from 'components/common/Page';
 import UserMenu from 'components/UserMenu';
 import VehiclesList from 'components/VehiclesList';
 import useRequest from 'hooks/useRequest';
-import Link from 'next/link';
 import { Vehicle, vehiclesPath } from 'queries/vehicles';
 import React, { useState } from 'react';
 import { authRedirect, withSession } from 'utils/session';
+import LinkButton from 'components/common/LinkButton';
 
 interface VehiclesProps {
 }
@@ -27,7 +27,7 @@ const PageHeader = () => {
                     <Logo height={30} />
                 </Center>
                 <Flex justify="end">
-                    <HStack spacing={2}>
+                    <HStack spacing={6}>
                         <ColorModeButton />
                         <UserMenu />
                     </HStack>
@@ -77,11 +77,9 @@ const Vehicles: React.FC<VehiclesProps> = () => {
                 <Heading fontSize="xl">
                     Vehicles
                 </Heading>
-                <Link href="/vehicles/new" passHref>
-                    <Button as="a" leftIcon={<AddIcon />} size="xs" variant="ghost" colorScheme="brand">
-                        New Vehicle
-                    </Button>
-                </Link>
+                <LinkButton href="/vehicles/new" leftIcon={<AddIcon />} size="xs" variant="ghost">
+                    New Vehicle
+                </LinkButton>
             </HStack>
 
             <VehiclesList vehicles={activeVehicles} />
