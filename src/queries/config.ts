@@ -1,20 +1,34 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import applyCaseMiddleware from 'axios-case-converter';
 
 const { PROXY_HOST } = process.env;
 const API_VERSION = 2;
 
-export const createAPIRequest = (req) => {
-    const session = req.session.get('session');
-    const Authorization = session ? `Token ${session.authToken}` : null;
+export const createAPIRequest = (req?) => {
+    let api
 
-    const api = axios.create({
-        baseURL: PROXY_HOST,
-        headers: {
-            Accept: `application/vnd.api+json; version=${API_VERSION}`,
-            Authorization,
-        }
-    })
+    if (req) {
+        const session = req.session.get('session');
+        const Authorization = session ? `Token ${session.authToken}` : null;
+
+        api = axios.create({
+            baseURL: PROXY_HOST,
+            headers: {
+                Accept: `application/vnd.api+json; version=${API_VERSION}`,
+                Authorization,
+            }
+        });
+
+        api.interceptors.request.use((config: AxiosRequestConfig) => {
+            config.url = config.url.replace(/^\/api/, '');
+            return config;
+        });
+    } else {
+        api = axios.create();
+    }
+
 
     return applyCaseMiddleware(api);
 }
+
+export const clientAPI = createAPIRequest();

@@ -243,12 +243,19 @@
   dependencies:
     "@chakra-ui/utils" "1.5.2"
 
-"@chakra-ui/icons@^1.0.10":
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/icons/-/icons-1.0.10.tgz#19fac3b73f574162a8e64fa086c3d0adff7a53fd"
-  integrity sha512-D93O7uQ07VjINd51gIRpd7kcMme/jTRtsefbuawYxmIbe6uDaNAIaYfDHM/lJPomdk/iaSXC68ESK6vyyfif+A==
+"@chakra-ui/icon@1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/icon/-/icon-1.1.7.tgz#a0a97fcc9cd7355364d18ada0268936c03d04128"
+  integrity sha512-6F71vCcwbuoHF/sXlMqM3KREGHRCpiQR8EydXE/NPQuXYE1LDLT92FdRzGFTq/1lB2jdWTzzVzuScHm8dUDzsw==
   dependencies:
-    "@chakra-ui/icon" "1.1.6"
+    "@chakra-ui/utils" "1.6.0"
+
+"@chakra-ui/icons@^1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/icons/-/icons-1.0.11.tgz#9cc1eda007c8296160b70a9e4299bb67ff34be7f"
+  integrity sha512-ALnrGxpHceY8u05q1YqGVZM3jdC8CEBrWH59RVfExj5Uqf0AHfty5vhiOmFEAhF5vyhXTqkwRURiu2DebIDcyQ==
+  dependencies:
+    "@chakra-ui/icon" "1.1.7"
     "@types/react" "^17.0.0"
 
 "@chakra-ui/image@1.0.12":
@@ -614,6 +621,16 @@
   dependencies:
     "@types/lodash.mergewith" "4.6.6"
     css-box-model "1.2.1"
+    lodash.mergewith "4.6.2"
+
+"@chakra-ui/utils@1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/utils/-/utils-1.6.0.tgz#36f2ab3469beac0c094218395f7ed62032666abf"
+  integrity sha512-hKk1yIXiAscq9PYm0wLaQe3HM9FpkeM4ARIYNERZB0S4Kb7wr+NQsYHgei2RrpK71f1ydzrnXyG6Axd3zzxwRw==
+  dependencies:
+    "@types/lodash.mergewith" "4.6.6"
+    css-box-model "1.2.1"
+    framesync "5.3.0"
     lodash.mergewith "4.6.2"
 
 "@chakra-ui/visually-hidden@1.0.9":
@@ -1577,6 +1594,11 @@ depd@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/depd/-/depd-2.0.0.tgz#b696163cc757560d09cf22cc8fad1571b79e76df"
   integrity sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==
+
+dequal@2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/dequal/-/dequal-2.0.2.tgz#85ca22025e3a87e65ef75a7a437b35284a7e319d"
+  integrity sha512-q9K8BlJVxK7hQYqa6XISGmBZbtQQWVXSrRrWreHC94rMt1QL/Impruc+7p2CYSYuVIUr+YCt6hjrs1kkdJRTug==
 
 des.js@^1.0.0:
   version "1.0.1"
@@ -2741,6 +2763,13 @@ react-clientside-effect@^1.2.2:
   dependencies:
     "@babel/runtime" "^7.12.13"
 
+react-day-picker@^7.4.10:
+  version "7.4.10"
+  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-7.4.10.tgz#d3928fa65c04379ad28c76de22aa85374a8361e1"
+  integrity sha512-/QkK75qLKdyLmv0kcVzhL7HoJPazoZXS8a6HixbVoK6vWey1Od1WRLcxfyEiUsRfccAlIlf6oKHShqY2SM82rA==
+  dependencies:
+    prop-types "^15.6.2"
+
 react-dom@17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-17.0.2.tgz#ecffb6845e3ad8dbfcdc498f0d0a939736502c23"
@@ -3165,6 +3194,13 @@ supports-color@^8.0.0:
   integrity sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==
   dependencies:
     has-flag "^4.0.0"
+
+swr@^0.5.5:
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/swr/-/swr-0.5.5.tgz#c72c1615765f33570a16bbb13699e3ac87eaaa3a"
+  integrity sha512-u4mUorK9Ipt+6LEITvWRWiRWAQjAysI6cHxbMmMV1dIdDzxMnswWo1CyGoyBHXX91CchxcuoqgFZ/ycx+YfhCA==
+  dependencies:
+    dequal "2.0.2"
 
 symbol-observable@^1.2.0:
   version "1.2.0"

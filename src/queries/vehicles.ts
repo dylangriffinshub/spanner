@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import { AxiosInstance } from 'axios';
 
 export interface Vehicle {
     id: number;
@@ -6,32 +6,47 @@ export interface Vehicle {
     vin: string;
     notes: string;
     position: number;
+    enableCost: boolean;
+    distanceUnit: 'mi' | 'km';
+    retired: boolean;
+    createdAt: string;
+    milesPerDay: number;
+    milesPerYear: number;
+    estimatedMileage: number;
+    squishVin: number;
+    reminders: string;
+}
+
+interface VehicleParams {
+    name: string;
+    vin: string;
+    notes: string;
+    position: number;
     enable_cost: boolean;
     distance_unit: 'mi' | 'km';
     retired: boolean;
-    created_at: string;
-    miles_per_day: number;
-    miles_per_year: number;
-    estimated_mileage: number;
-    squish_vin: number;
-    reminder: string;
 }
 
-export function fetchVehicles(api: AxiosInstance) {
-    return api.get<Vehicle[]>('/vehicles');
+export const vehiclesPath = `/api/vehicles`;
+export const vehiclePath = (vehicleId: number | string) => `/api/vehicles/${vehicleId}`;
+
+export async function fetchVehicles(api: AxiosInstance) {
+    const { data } = await api.get<Vehicle[]>(vehiclesPath);
+    return data;
 }
 
-//   export function createVehicle(params) {
-//     return post('/vehicles', params, CREATE_VEHICLE)
-//   }
+export async function fetchVehicle(api: AxiosInstance, vehicleId: string) {
+    const { data } = await api.get<Vehicle>(vehiclePath(vehicleId));
+    return data;
+}
 
-//   export function fetchVehicle(vehicleId) {
-//     return get(`/vehicles/${vehicleId}`, RECEIVE_VEHICLE)
-//   }
+export function updateVehicle(api: AxiosInstance, vehicleId: number, params: Partial<VehicleParams>) {
+    return api.put(vehiclePath(vehicleId), params);
+}
 
-//   export function updateVehicle(vehicleId, params) {
-//     return put(`/vehicles/${vehicleId}`, params, UPDATE_VEHICLE)
-//   }
+export function createVehicle(api: AxiosInstance, params: VehicleParams) {
+    return api.post(vehiclesPath, params);
+}
 
 //   export function destroyVehicle(vehicleId) {
 //     return destroy(`/vehicles/${vehicleId}`, DESTROY_VEHICLE)

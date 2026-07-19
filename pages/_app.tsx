@@ -1,26 +1,9 @@
 import React from 'react';
 import Head from 'next/head'
 import { ChakraProvider, CSSReset } from '@chakra-ui/react';
-import { extendTheme } from "@chakra-ui/react"
+import theme from 'theme';
 
-const colors = {
-    brand: {
-        50: '#f7f6fa',
-        100: '#eeeef5',
-        200: '#d5d4e5',
-        300: '#bbb9d5',
-        400: '#8985b6',
-        500: '#565196',
-        600: '#4d4987',
-        700: '#413d71',
-        800: '#34315a',
-        900: '#2a284a'
-    }
-}
-
-const theme = extendTheme({ colors })
-
-function MyApp({ Component, pageProps }) {
+function App({ Component, pageProps }) {
     return (
         <ChakraProvider theme={theme}>
             <Head>
@@ -51,11 +34,11 @@ function MyApp({ Component, pageProps }) {
 
                 <link href='//fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css' />
             </Head>
-            
+
             <CSSReset />
             <Component {...pageProps} />
         </ChakraProvider>
     )
 }
 
-export default MyApp
+export default App
