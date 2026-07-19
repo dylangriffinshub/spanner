@@ -25,10 +25,13 @@
 		className,
 	)}
 >
-	<div>
+	<div data-start>
 		{@render start?.()}
 	</div>
-	<div class="flex justify-center overflow-x-auto max-sm:col-span-2 max-sm:row-start-2">
+	<div
+		data-center
+		class="flex justify-center overflow-x-auto max-sm:col-span-2 max-sm:row-start-2 pb-2 -mb-2 max-sm:-mx-2"
+	>
 		{#if center}
 			{@render center()}
 		{:else}
@@ -37,7 +40,7 @@
 			</a>
 		{/if}
 	</div>
-	<div class="flex justify-end items-center gap-3">
+	<div data-end class="flex justify-end items-center gap-3">
 		{#if end}
 			{@render end()}
 		{:else if session}

@@ -2,6 +2,8 @@ import camelcaseKeys from 'camelcase-keys';
 import snakeCaseKeys from 'snakecase-keys';
 import { apiConfig } from './config';
 
+export { apiConfig };
+
 export type Transport = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 
 export interface FetcherConfig {
@@ -38,12 +40,13 @@ export const getTimeZoneOffset = (): string =>
 	((new Date().getTimezoneOffset() / 60) * -1).toString();
 
 export class HTTPError<T = string> extends Error {
+	status: number;
 	data: T;
 
 	constructor(response: Response, data: T) {
 		super('');
 		this.name = 'HTTPError';
-
+		this.status = response.status;
 		this.message = `HTTP Error: ${response.status}`;
 		this.data = data;
 	}

@@ -30,14 +30,14 @@
 </svelte:head>
 
 <VehiclePageLayout {vehicle} {activeTab}>
-	<div class="max-w-2xl mx-auto">
+	<div class="max-w-3xl mx-auto">
 		{#if vehicle.notes || editing}
-			<Card variant="outline" bleed>
-				<header class="flex items-center mb-4 gap-2">
+			<Card variant="outline" bleed class="gap-4">
+				<header class="flex items-center gap-2">
 					{#if editing}
 						<SegmentedControl
 							items={[
-								{ value: 'edit', label: 'Edit' },
+								{ value: 'edit', label: 'Write' },
 								{ value: 'preview', label: 'Preview' },
 							]}
 							value={view}
@@ -83,14 +83,15 @@
 							},
 						})}
 					>
-						<Textarea name="notes" bind:value={notesDraft} class="min-h-40 font-mono" />
+						<Textarea
+							name="notes"
+							bind:value={notesDraft}
+							class="min-h-40 font-mono *:focus-visible:outline-none"
+							variant="plain"
+						/>
 
-						<p class="mt-1.5 text-sm text-ink-400">
-							<a
-								class="text-brand-500 underline"
-								href="https://www.markdownguide.org/cheat-sheet/"
-								target="_blank"
-							>
+						<p class="mt-1.5 text-sm">
+							<a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">
 								Markdown supported
 							</a>
 						</p>
@@ -110,7 +111,10 @@
 					<NotepadText size={48} class="text-ink-300" />
 				{/snippet}
 				{#snippet action()}
-					<Button onclick={() => (view = 'edit')}>Add Notes</Button>
+					<Button onclick={() => (view = 'edit')}>
+						<Pencil size={18} />
+						Edit Notes
+					</Button>
 				{/snippet}
 			</EmptyState>
 		{/if}
