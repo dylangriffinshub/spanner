@@ -7,6 +7,8 @@ import { VehicleRecord } from 'queries/records';
 import { Vehicle } from 'queries/vehicles';
 import React from 'react';
 import { parseDateUTC } from 'utils/date';
+import lang from 'utils/lang';
+import { editVehiclePath } from 'utils/resources';
 import { formatEstimatedMileage, formatMilesPerYear, sortRecordsOldestFirst } from 'utils/vehicle';
 
 export interface VehicleStatsProps {
@@ -30,12 +32,12 @@ export const VehicleStats: React.FC<VehicleStatsProps> = ({ vehicle, records }) 
         <Box overflowY="hidden" overflowX="auto" maxW="calc(100vw - 32px)" mb={6}>
             <HStack spacing={[8, null, 5]} pb={2}>
                 {vehicle.estimatedMileage && (
-                    <VehicleStat label="Estimated mileage">
+                    <VehicleStat label={`Estimated ${lang.mileageLabel[vehicle.distanceUnit]}`}>
                         {formatEstimatedMileage(vehicle)}
                     </VehicleStat>
                 )}
                 {vehicle.milesPerYear && (
-                    <VehicleStat label="Yearly mileage">
+                    <VehicleStat label={`Yearly ${lang.mileageLabel[vehicle.distanceUnit]}`}>
                         {formatMilesPerYear(vehicle)}
                     </VehicleStat>
                 )}
@@ -45,7 +47,7 @@ export const VehicleStats: React.FC<VehicleStatsProps> = ({ vehicle, records }) 
                     </VehicleStat>
                 )}
                 <VehicleStat label="VIN">
-                    {vehicle.vin || <Link href={`/vehicles/${vehicle.id}/edit`}>Add VIN...</Link>}
+                    {vehicle.vin || <Link href={editVehiclePath(vehicle.id)}>Add VIN...</Link>}
                 </VehicleStat>
             </HStack>
         </Box>

@@ -1,51 +1,70 @@
-import { CheckCircleIcon } from '@chakra-ui/icons';
 import {
-    Button, FormControl, FormLabel, Heading, Input, Select, VStack, Text, FormHelperText, NumberInput, NumberInputField,
+    Box,
+    FormControl, FormHelperText, FormLabel, Input, Select, Text,
 } from '@chakra-ui/react';
 import DatePicker from 'components/common/DatePicker';
+import DestroyButton from 'components/common/DestroyButton';
 import FormErrors from 'components/common/FormErrors';
 import SubmitButton from 'components/common/SubmitButton';
 import { addMonths } from 'date-fns';
 import useFormData from 'hooks/useFormData';
 import useMutation, { mutate } from 'hooks/useMutation';
+import { capitalize } from 'lodash';
 import { useRouter } from 'next/router';
-import { clientAPI } from 'queries/config';
+import { clientAPI, RecordID } from 'queries/config';
 import * as reminders from 'queries/reminders';
-import { Vehicle, vehiclePath } from 'queries/vehicles';
+import { DistanceUnit, vehicleAPIPath } from 'queries/vehicles';
 import React, { useEffect, useState } from 'react';
 import { formatDateISO, intlFormatDate, parseDateUTC } from 'utils/date';
-import { formatMileageValue, mileageFieldHelpers } from 'utils/form';
+import { mileageFieldHelpers } from 'utils/form';
+import lang from 'utils/lang';
+import { reminderPath, vehiclePath } from 'utils/resources';
 import { formatMileage } from 'utils/vehicle';
 
 export interface NewReminderFormProps {
-    vehicle: Vehicle;
+    vehicleId: RecordID;
     minMileage: number | undefined;
+    distanceUnit: DistanceUnit | undefined;
+    formValues?: reminders.ReminderParams;
 }
 
-export const NewReminderForm: React.FC<NewReminderFormProps> = ({ vehicle, minMileage }) => {
+export const ReminderForm: React.FC<NewReminderFormProps> = ({
+    formValues, vehicleId, minMileage = 0, distanceUnit = 'mi',
+}) => {
     const router = useRouter();
     const [estimatedDate, setEstimatedDate] = useState<Date | null>(null);
 
     const { formData, getFormFieldProps, setFormField } = useFormData({
-        date: addMonths(new Date(), 6),
+        date: formatDateISO(addMonths(new Date(), 6)),
         notes: '',
         reminderType: '',
         mileage: '',
-    });
+        ...formValues,
+    }, [formValues]);
 
     const {
-        mutate: createReminderMutation, isProcessing, error,
-    } = useMutation(reminders.createReminder, {
+        mutate: createOrUpdateReminder, isProcessing, error,
+    } = useMutation(reminders.createOrUpdateReminder, {
         onSuccess() {
-            mutate(vehiclePath(vehicle.id));
-            router.push(`/vehicles/${vehicle.id}#panel=1`);
+            mutate(vehicleAPIPath(vehicleId));
+            if (formValues?.id) {
+                router.replace(`${reminderPath(vehicleId, formValues?.id)}`);
+            } else {
+                router.replace(`${vehiclePath(vehicleId)}#panel=1`);
+            }
+        },
+    });
+
+    const { mutate: destroyReminder } = useMutation(reminders.destroyReminder, {
+        onSuccess() {
+            router.replace(`${vehiclePath(vehicleId)}#panel=1`);
         },
     });
 
     useEffect(() => {
         const estimateReminderDate = async (params: reminders.EstimateReminderParams) => {
             try {
-                const { reminderDate } = await reminders.estimateReminderDate(clientAPI, vehicle.id, params);
+                const { reminderDate } = await reminders.estimateReminderDate(clientAPI, vehicleId, params);
                 setEstimatedDate(parseDateUTC(reminderDate));
             } catch (err) {
                 console.error(err);
@@ -54,10 +73,10 @@ export const NewReminderForm: React.FC<NewReminderFormProps> = ({ vehicle, minMi
 
         const mileage = Number(formData.mileage);
 
-        if (mileage >= (minMileage ?? 0)) {
+        if (mileage > 0 && mileage >= minMileage) {
             estimateReminderDate({
                 mileage,
-                date: formatDateISO(formData.date),
+                date: formData.date,
                 reminderType: formData.reminderType as reminders.ReminderType,
             });
         } else {
@@ -67,11 +86,13 @@ export const NewReminderForm: React.FC<NewReminderFormProps> = ({ vehicle, minMi
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        createOrUpdateReminder(vehicleId, formData);
+    };
 
-        createReminderMutation(vehicle.id, {
-            ...formData,
-            date: formatDateISO(formData.date),
-        });
+    const handleDelete = (e) => {
+        e.preventDefault();
+        if (!formValues) return;
+        destroyReminder(vehicleId, formValues.id);
     };
 
     return (
@@ -99,21 +120,21 @@ export const NewReminderForm: React.FC<NewReminderFormProps> = ({ vehicle, minMi
                 <FormControl mb={4} id="date" isRequired>
                     <FormLabel>Date</FormLabel>
                     <input type="hidden" {...getFormFieldProps('date')} />
-                    <DatePicker initialDate={formData.date} onChange={(date) => setFormField('date', date)} />
+                    <DatePicker initialDate={parseDateUTC(formData.date)} onChange={(date) => setFormField('date', date)} />
                 </FormControl>
             )}
 
             {['mileage', 'date_or_mileage'].includes(formData.reminderType) && (
                 <FormControl mb={4} id="mileage" isRequired>
-                    <FormLabel>Mileage</FormLabel>
-                    <NumberInput min={minMileage} clampValueOnBlur={false} keepWithinRange={false}>
-                        <NumberInputField {...getFormFieldProps('mileage', mileageFieldHelpers)} />
-                    </NumberInput>
-                    {minMileage && (
+                    <FormLabel>{capitalize(lang.mileageLabel[distanceUnit])}</FormLabel>
+
+                    <Input type="text" {...getFormFieldProps('mileage', mileageFieldHelpers)} />
+
+                    {Boolean(minMileage) && (
                         <FormHelperText>
                             Minimum
                             {' '}
-                            {formatMileage(minMileage, vehicle.distanceUnit)}
+                            {formatMileage(minMileage, distanceUnit)}
                         </FormHelperText>
                     )}
                 </FormControl>
@@ -128,8 +149,20 @@ export const NewReminderForm: React.FC<NewReminderFormProps> = ({ vehicle, minMi
             )}
 
             <SubmitButton isProcessing={isProcessing} />
+
+            {Boolean(formValues?.id) && (
+                <Box mt={10}>
+                    <DestroyButton
+                        confirmTitle="Please confirm delete"
+                        confirmBody="You can't undo this action afterwards."
+                        onConfirm={handleDelete}
+                    >
+                        Delete Record
+                    </DestroyButton>
+                </Box>
+            )}
         </form>
     );
 };
 
-export default NewReminderForm;
+export default ReminderForm;

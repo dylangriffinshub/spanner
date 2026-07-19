@@ -4,16 +4,17 @@ import {
 import BackButton from 'components/common/BackButton';
 import LinkPreload from 'components/common/LinkPreload';
 import MileageAdjustmentForm from 'components/forms/MileageAdjustmentForm';
-import NewReminderForm from 'components/forms/NewReminderForm';
+import ReminderForm from 'components/forms/ReminderForm';
 import Page from 'components/common/Page';
 import RecordForm from 'components/forms/RecordForm';
 import TabsHeader from 'components/common/TabsHeader';
 import VehicleActionsMenu from 'components/VehicleActionsMenu';
 import useRequest from 'hooks/useRequest';
-import { VehicleRecord, vehicleRecordsPath } from 'queries/records';
-import { Vehicle, vehiclePath } from 'queries/vehicles';
+import { VehicleRecord, recordsAPIPath } from 'queries/records';
+import { Vehicle, vehicleAPIPath } from 'queries/vehicles';
 import React from 'react';
 import { sortRecordsNewestFirst } from 'utils/vehicle';
+import lang from 'utils/lang';
 import { VehiclePageProps } from '../[vehicleId]';
 
 export type AddPageProps = VehiclePageProps
@@ -23,7 +24,7 @@ const PageHeader: React.FC<{ vehicle?: Vehicle }> = ({ vehicle }) => (
         tabs={[
                 'Add Service',
                 'Add Reminder',
-                'Adjust Mileage',
+                `Adjust ${lang.mileageLabel[vehicle?.distanceUnit ?? 'mi']}`,
             ]}
         LeftComponent={(
             <HStack spacing={2}>
@@ -37,8 +38,8 @@ const PageHeader: React.FC<{ vehicle?: Vehicle }> = ({ vehicle }) => (
 );
 
 export const AddPage: React.FC<AddPageProps> = ({ params }) => {
-    const { data: vehicle } = useRequest<Vehicle>(vehiclePath(params.vehicleId));
-    const { data: records } = useRequest<VehicleRecord[]>(vehicleRecordsPath(params.vehicleId));
+    const { data: vehicle } = useRequest<Vehicle>(vehicleAPIPath(params.vehicleId));
+    const { data: records } = useRequest<VehicleRecord[]>(recordsAPIPath(params.vehicleId));
 
     const newestRecordMileage = records ? sortRecordsNewestFirst(records)[0].mileage : 0;
 
@@ -46,7 +47,7 @@ export const AddPage: React.FC<AddPageProps> = ({ params }) => {
         <Page
             Header={<PageHeader vehicle={vehicle} />}
         >
-            <LinkPreload path={vehiclePath(params.vehicleId)} />
+            <LinkPreload path={vehicleAPIPath(params.vehicleId)} />
 
             {vehicle && (
                 <TabPanels>
@@ -57,7 +58,11 @@ export const AddPage: React.FC<AddPageProps> = ({ params }) => {
                     </TabPanel>
                     <TabPanel p={0}>
                         <Container maxW={[null, 'sm']} p={0}>
-                            <NewReminderForm vehicle={vehicle} minMileage={newestRecordMileage} />
+                            <ReminderForm
+                                vehicleId={params.vehicleId}
+                                distanceUnit={vehicle.distanceUnit}
+                                minMileage={newestRecordMileage}
+                            />
                         </Container>
                     </TabPanel>
                     <TabPanel p={0}>

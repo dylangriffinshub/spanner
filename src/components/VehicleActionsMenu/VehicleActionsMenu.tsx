@@ -6,8 +6,9 @@ import VehicleColorIndicator from 'components/VehicleColorIndicator';
 import useMutation, { mutate } from 'hooks/useMutation';
 import { debounce } from 'lodash';
 import Link from 'next/link';
-import { updateVehicle, Vehicle, vehiclePath } from 'queries/vehicles';
+import { updateVehicle, Vehicle, vehicleAPIPath } from 'queries/vehicles';
 import React, { useCallback } from 'react';
+import { editVehiclePath } from 'utils/resources';
 
 export interface VehicleActionsMenuProps {
     vehicle: Vehicle | undefined;
@@ -18,7 +19,7 @@ export const VehicleActionsMenu: React.FC<VehicleActionsMenuProps> = ({ vehicle 
 
     const handleUpdateVehicle = (nextOptions: Partial<Vehicle>) => {
         if (!vehicle) return;
-        mutate(vehiclePath(vehicle.id), { ...vehicle, ...nextOptions }, false);
+        mutate(vehicleAPIPath(vehicle.id), { ...vehicle, ...nextOptions }, false);
         updateVehicleMutation(vehicle.id, nextOptions);
     };
 
@@ -57,7 +58,7 @@ export const VehicleActionsMenu: React.FC<VehicleActionsMenuProps> = ({ vehicle 
 
             {vehicle && (
                 <MenuList>
-                    <Link href={`/vehicles/${vehicle.id}/edit`} passHref>
+                    <Link href={editVehiclePath(vehicle.id)} passHref>
                         <MenuItem as="a">
                             Edit
                         </MenuItem>
@@ -100,7 +101,7 @@ export const VehicleActionsMenu: React.FC<VehicleActionsMenuProps> = ({ vehicle 
                     <MenuDivider />
 
                     <MenuItem>Import records from CSV</MenuItem>
-                    <MenuItem as="a" href={`${vehiclePath(vehicle.id)}/export`} target="_blank">
+                    <MenuItem as="a" href={`${vehicleAPIPath(vehicle.id)}/export`} target="_blank">
                         Export records to CSV
                     </MenuItem>
 

@@ -8,10 +8,11 @@ import VehicleNotes from 'components/VehicleNotes';
 import VehicleReminders from 'components/VehicleReminders';
 import VehicleService from 'components/VehicleService';
 import useRequest from 'hooks/useRequest';
-import { vehicleRecordsPath } from 'queries/records';
-import { Vehicle, vehiclePath } from 'queries/vehicles';
+import { recordsAPIPath } from 'queries/records';
+import { Vehicle, vehicleAPIPath } from 'queries/vehicles';
 import React from 'react';
 import { getOverdueRemindersCount } from 'utils/reminders';
+import { vehiclesPath } from 'utils/resources';
 import { authRedirect, withSession } from 'utils/session';
 
 export interface VehiclePageProps {
@@ -32,7 +33,7 @@ const PageHeader = ({ vehicle, overDueRemindersBadge }) => (
         }
         LeftComponent={(
             <HStack spacing={2}>
-                <BackButton href="/vehicles">
+                <BackButton href={vehiclesPath()}>
                     Vehicles
                 </BackButton>
 
@@ -43,7 +44,7 @@ const PageHeader = ({ vehicle, overDueRemindersBadge }) => (
 );
 
 const VehiclePage: React.FC<VehiclePageProps> = ({ params }) => {
-    const { data: vehicle } = useRequest<Vehicle>(vehiclePath(params.vehicleId));
+    const { data: vehicle } = useRequest<Vehicle>(vehicleAPIPath(params.vehicleId));
 
     return (
         <Page
@@ -51,8 +52,8 @@ const VehiclePage: React.FC<VehiclePageProps> = ({ params }) => {
             Header={<PageHeader vehicle={vehicle} overDueRemindersBadge={vehicle ? getOverdueRemindersCount(vehicle) : undefined} />}
         >
             <LinkPreload path={[
-                vehiclePath(params.vehicleId),
-                vehicleRecordsPath(params.vehicleId),
+                vehicleAPIPath(params.vehicleId),
+                recordsAPIPath(params.vehicleId),
             ]}
             />
 

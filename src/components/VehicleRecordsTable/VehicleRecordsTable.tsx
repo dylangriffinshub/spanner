@@ -5,11 +5,13 @@ import LinkButton from 'components/common/LinkButton';
 import { intlFormat } from 'date-fns';
 import useInlineColorMode from 'hooks/useInlineColorMode';
 import { mutate } from 'hooks/useMutation';
-import { groupBy } from 'lodash';
-import { VehicleRecord, vehicleRecordPath } from 'queries/records';
+import { capitalize, groupBy } from 'lodash';
+import { VehicleRecord, recordAPIPath } from 'queries/records';
 import React from 'react';
 import { parseDateUTC } from 'utils/date';
+import lang from 'utils/lang';
 import { formatCurrency } from 'utils/number';
+import { editRecordPath } from 'utils/resources';
 import { formatMileage, sortRecordsNewestFirst } from 'utils/vehicle';
 
 export interface VehicleRecordsTableProps {
@@ -119,7 +121,7 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
                                 textTransform="uppercase"
                             >
                                 <Cell>Date</Cell>
-                                <Cell>Mileage</Cell>
+                                <Cell whiteSpace="nowrap">{capitalize(lang.mileageLabel[distanceUnit])}</Cell>
                                 {enableCost && <Cell>Cost</Cell>}
                                 <Cell>Notes</Cell>
                                 <Cell />
@@ -177,13 +179,13 @@ export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({
 
                                         <Cell justify="end" basis="100%">
                                             <LinkButton
-                                                href={`/vehicles/${vehicleId}/records/${record.id}/edit`}
+                                                href={editRecordPath(vehicleId, record.id)}
                                                 size="sm"
                                                 variant="link"
                                                 py={[1, null]}
                                                 onClick={() => {
                                                     // Preload data for edit form
-                                                    mutate(vehicleRecordPath(vehicleId, record.id), record, false);
+                                                    mutate(recordAPIPath(vehicleId, record.id), record, false);
                                                 }}
                                             >
                                                 Edit

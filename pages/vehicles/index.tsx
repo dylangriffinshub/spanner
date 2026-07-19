@@ -10,10 +10,11 @@ import Page from 'components/common/Page';
 import UserMenu from 'components/UserMenu';
 import VehiclesList from 'components/VehiclesList';
 import useRequest from 'hooks/useRequest';
-import { Vehicle, vehiclesPath } from 'queries/vehicles';
+import { Vehicle, vehiclesAPIPath } from 'queries/vehicles';
 import React, { useState } from 'react';
 import { authRedirect, withSession } from 'utils/session';
 import LinkButton from 'components/common/LinkButton';
+import { newVehiclePath } from 'utils/resources';
 
 interface VehiclesProps {
 }
@@ -54,7 +55,7 @@ const sortPositionAsc = (a: Vehicle, b:Vehicle) => {
 };
 
 const Vehicles: React.FC<VehiclesProps> = () => {
-    const { data } = useRequest<Vehicle[]>(vehiclesPath);
+    const { data } = useRequest<Vehicle[]>(vehiclesAPIPath);
 
     const [showRetired, setShowRetired] = useState(false);
 
@@ -69,7 +70,7 @@ const Vehicles: React.FC<VehiclesProps> = () => {
             maxW="container.xl"
             Header={<PageHeader />}
         >
-            <LinkPreload path={vehiclesPath} />
+            <LinkPreload path={vehiclesAPIPath} />
 
             <Box height={12} />
 
@@ -77,7 +78,7 @@ const Vehicles: React.FC<VehiclesProps> = () => {
                 <Heading fontSize="xl">
                     Vehicles
                 </Heading>
-                <LinkButton href="/vehicles/new" leftIcon={<AddIcon />} size="xs" variant="ghost">
+                <LinkButton href={newVehiclePath()} leftIcon={<AddIcon />} size="xs" variant="ghost">
                     New Vehicle
                 </LinkButton>
             </HStack>

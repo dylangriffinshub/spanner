@@ -1,12 +1,12 @@
 import React from 'react';
-import { Container, HStack } from '@chakra-ui/react';
+import { Container, Heading, HStack } from '@chakra-ui/react';
 import Page from 'components/common/Page';
 import Header from 'components/common/Header';
 import BackButton from 'components/common/BackButton';
 import VehicleActionsMenu from 'components/VehicleActionsMenu';
 import useRequest from 'hooks/useRequest';
-import { Vehicle, vehiclePath } from 'queries/vehicles';
-import { VehicleRecord, vehicleRecordPath } from 'queries/records';
+import { Vehicle, vehicleAPIPath } from 'queries/vehicles';
+import { VehicleRecord, recordAPIPath } from 'queries/records';
 import RecordForm from 'components/forms/RecordForm';
 
 export interface EditPageProps {
@@ -32,14 +32,18 @@ const PageHeader = ({ vehicle }) => {
 };
 
 export const EditPage: React.FC<EditPageProps> = ({ params }) => {
-    const { data: vehicle } = useRequest<Vehicle>(vehiclePath(params.vehicleId));
-    const { data: vehicleRecord } = useRequest<VehicleRecord>(vehicleRecordPath(params.vehicleId, params.recordId));
+    const { data: vehicle } = useRequest<Vehicle>(vehicleAPIPath(params.vehicleId));
+    const { data: vehicleRecord } = useRequest<VehicleRecord>(recordAPIPath(params.vehicleId, params.recordId));
 
     return (
         <Page
             Header={<PageHeader vehicle={vehicle} />}
         >
             <Container maxW={[null, 'container.sm']} p={0}>
+                <Heading mb={6}>
+                    Edit Reminder
+                </Heading>
+
                 {vehicle && (
                     <RecordForm vehicle={vehicle} record={vehicleRecord} />
                 )}

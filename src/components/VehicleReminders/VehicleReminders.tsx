@@ -8,10 +8,11 @@ import useInlineColorMode from 'hooks/useInlineColorMode';
 import { mutate } from 'hooks/useMutation';
 import useRequest from 'hooks/useRequest';
 import Link from 'next/link';
-import { VehicleReminder, vehicleReminderPath } from 'queries/reminders';
-import { Vehicle, vehiclePath } from 'queries/vehicles';
+import { VehicleReminder, reminderAPIPath } from 'queries/reminders';
+import { Vehicle, vehicleAPIPath } from 'queries/vehicles';
 import React from 'react';
 import { getTime } from 'utils/date';
+import { reminderPath, vehicleAddPath } from 'utils/resources';
 
 export interface VehicleRemindersProps {
     vehicleId: string
@@ -23,7 +24,7 @@ const sortDueSoonest = (a: VehicleReminder, b: VehicleReminder) => {
 };
 
 export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId }) => {
-    const { data: vehicle, loading } = useRequest<Vehicle>(vehiclePath(vehicleId));
+    const { data: vehicle, loading } = useRequest<Vehicle>(vehicleAPIPath(vehicleId));
     const cm = useInlineColorMode();
 
     const reminders = vehicle?.reminders.sort(sortDueSoonest) ?? [];
@@ -32,7 +33,7 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
         <Container>
             <Flex mb={6} direction="row-reverse">
                 {!vehicle?.retired && (
-                    <LinkButton href={`/vehicles/${vehicleId}/add#panel=1`} size="sm" leftIcon={<AddIcon />}>
+                    <LinkButton href={`${vehicleAddPath(vehicleId)}#panel=1`} size="sm" leftIcon={<AddIcon />}>
                         Add
                     </LinkButton>
                 )}
@@ -53,9 +54,9 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
                     >
                         <Flex align="center">
                             <Flex flex={2} direction="column">
-                                <Link href={`/vehicles/${vehicleId}/reminders/${reminder.id}`} passHref>
+                                <Link href={reminderPath(vehicleId, reminder.id)} passHref>
                                     <LinkOverlay onClick={() => {
-                                        mutate(vehicleReminderPath(vehicleId, reminder.id), reminder, false);
+                                        mutate(reminderAPIPath(vehicleId, reminder.id), reminder, false);
                                     }}
                                     >
                                         <Text>
@@ -66,7 +67,7 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
 
                                 <ReminderSummary
                                     reminder={reminder}
-                                    distanceUnit={vehicle.distanceUnit}
+                                    distanceUnit={vehicle?.distanceUnit}
                                     fontSize="sm"
                                 />
                             </Flex>
