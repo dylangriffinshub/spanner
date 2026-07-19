@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class HourlyJob < ApplicationJob
+  queue_as :low_priority
+
   def perform
     today_reminders_in_timezone
   end
@@ -13,7 +15,7 @@ class HourlyJob < ApplicationJob
 
     users.each do |user|
       reminders = user.reminders.where(reminder_date: date.all_day)
-      reminders.select! do |r|
+      reminders = reminders.select do |r|
         r.vehicle.preferences.send_reminder_emails
       end
 
