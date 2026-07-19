@@ -11,6 +11,10 @@ module V2
     def create
       user = User.find_or_create_by!(email: params[:email].strip.downcase)
 
+      if user && user.demo_account?
+        return render json: user
+      end
+
       if user
         user.update!(
           login_token: SecureRandom.urlsafe_base64,
@@ -38,18 +42,23 @@ module V2
         browser = Browser.new(request.user_agent)
         name = request.user_agent =~ /Spanner/ ? 'Spanner iOS' : browser.name
 
-        user.update!(
-          login_token: nil,
-          login_token_valid_until: 1.year.ago,
-        )
+        unless user.demo_account?
+          user.update!(
+            login_token: nil,
+            login_token_valid_until: 1.year.ago,
+          )
+        end
+
         session = user.sessions.build(
           ip: request.remote_ip,
           description: name || browser.name,
           user_agent: request.user_agent,
+          last_seen: Time.now,
           auth_token: SecureRandom.urlsafe_base64(24),
           auth_token_valid_until: Time.now + 2.months,
         )
         session.save
+        session.user.update_attributes(time_zone_offset: time_zone_offset)
 
         render json: session
       else

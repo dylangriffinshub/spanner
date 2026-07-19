@@ -47,13 +47,21 @@ class ApplicationController < ActionController::API
 
       if session
         session.update_attributes(
+          ip: request.remote_ip,
           last_seen: Time.now,
           auth_token_valid_until: Time.now + 2.months
         )
+
+        session.user.update_attributes(time_zone_offset: time_zone_offset)
+
         @current_session = session
         @current_user = session.user
       end
     end
+  end
+
+  def time_zone_offset
+    request.headers['HTTP_TIME_ZONE_OFFSET'] || "0"
   end
 
   def render_unauthorized
