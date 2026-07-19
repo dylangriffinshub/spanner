@@ -2,6 +2,7 @@ import { AddIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import {
     Container, Flex, Heading, LinkBox, LinkOverlay, Text,
 } from '@chakra-ui/react';
+import EmptyState from 'components/common/EmptyState';
 import LinkButton from 'components/common/LinkButton';
 import ReminderSummary from 'components/ReminderSummary';
 import useInlineColorMode from 'hooks/useInlineColorMode';
@@ -18,16 +19,36 @@ export interface VehicleRemindersProps {
     vehicleId: string
 }
 
-const sortDueSoonest = (a: VehicleReminder, b: VehicleReminder) => {
-    if (!a.reminderDate || !b.reminderDate) return -1;
-    return getTime(a.reminderDate) - getTime(b.reminderDate);
+const sortByDueSoonest = (reminders: VehicleReminder[]) => {
+    return [...reminders].sort((a, b) => {
+        if (a.reminderDate && b.reminderDate) {
+            return getTime(a.reminderDate) - getTime(b.reminderDate);
+        }
+        return 1;
+    });
 };
 
 export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId }) => {
     const { data: vehicle, loading } = useRequest<Vehicle>(vehicleAPIPath(vehicleId));
     const cm = useInlineColorMode();
 
-    const reminders = vehicle?.reminders.sort(sortDueSoonest) ?? [];
+    const reminders = sortByDueSoonest(vehicle?.reminders ?? []);
+
+    const isEmpty = !loading && !reminders.length;
+
+    if (isEmpty) {
+        return (
+            <EmptyState
+                heading="Get reminders in your inbox"
+                details="Use reminders to get notified on a date or mileage."
+                action={(
+                    <LinkButton href={`${vehicleAddPath(vehicleId)}#panel=1`} leftIcon={<AddIcon />} shadow="lg">
+                        New Reminder
+                    </LinkButton>
+                )}
+            />
+        );
+    }
 
     return (
         <Container>
@@ -77,17 +98,6 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
                     </LinkBox>
                 );
             }))}
-
-            {Boolean(!reminders.length) && !loading && (
-                <>
-                    <Heading>
-                        No reminders yet
-                    </Heading>
-                    <Text>
-                        Use reminders to get notified of things on a date or mileage
-                    </Text>
-                </>
-            )}
         </Container>
     );
 };

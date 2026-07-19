@@ -1,7 +1,8 @@
 import { AddIcon } from '@chakra-ui/icons';
 import {
-    Box, Container, Flex, Heading, LightMode, Spacer, Text,
+    Box, Container, Flex, Heading, HStack, LightMode, Spacer, Text,
 } from '@chakra-ui/react';
+import EmptyState from 'components/common/EmptyState';
 import LinkButton from 'components/common/LinkButton';
 import Search from 'components/Search';
 import VehicleRecordsTable from 'components/VehicleRecordsTable';
@@ -9,11 +10,12 @@ import VehicleStats from 'components/VehicleStats';
 import { intlFormat } from 'date-fns';
 import useRequest from 'hooks/useRequest';
 import useSearchQuery from 'hooks/useSearchQuery';
+import qs from 'qs';
 import { VehicleRecord, recordsAPIPath } from 'queries/records';
 import { Vehicle, vehicleAPIPath } from 'queries/vehicles';
 import React from 'react';
 import { parseDateUTC } from 'utils/date';
-import { vehicleAddPath } from 'utils/resources';
+import { vehicleAddPath, vehicleImportPath } from 'utils/resources';
 
 export interface VehicleServiceProps {
     vehicleId: string;
@@ -31,11 +33,31 @@ export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => 
     });
 
     const anyLoading = vehicleLoading || recordsLoading;
+    const isEmpty = !anyLoading && !records?.length;
     const recordsResults = searchQuery ? queryResults : records;
 
     const handleSearch = (text: string) => {
         setSearchQuery(text);
     };
+
+    if (isEmpty) {
+        return (
+            <EmptyState
+                heading="Add your vehicle's history"
+                details="Try adding your purchase as the first record."
+                action={(
+                    <HStack spacing={6}>
+                        <LinkButton href={`${vehicleAddPath(vehicleId)}?${qs.stringify({ notes: 'Purchase' })}`} shadow="lg">
+                            Add Purchase
+                        </LinkButton>
+                        <LinkButton href={`${vehicleImportPath(vehicleId)}`} variant="ghost">
+                            Import History
+                        </LinkButton>
+                    </HStack>
+                )}
+            />
+        );
+    }
 
     return (
         <Container maxW="container.lg">
@@ -57,20 +79,13 @@ export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => 
                 <Search onChangeText={handleSearch} />
             </Flex>
 
-            {(anyLoading || Boolean(records?.length)) ? (
+            {(anyLoading || Boolean(records?.length)) && (
                 <VehicleRecordsTable
                     vehicleId={vehicleId}
                     records={recordsResults}
                     enableCost={vehicle?.enableCost}
                     distanceUnit={vehicle?.distanceUnit}
                 />
-            ) : (
-                <Box>
-                    <Heading>
-                        You don&apos;t have any records yet
-                    </Heading>
-                    <Text>Try adding your purchase as the first one</Text>
-                </Box>
             )}
 
             {Boolean(searchQuery && !queryResults.length) && (

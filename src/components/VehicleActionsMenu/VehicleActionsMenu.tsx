@@ -1,5 +1,6 @@
 import { CheckIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import {
+    Box,
     Button, HStack, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Skeleton, Spacer, Text,
 } from '@chakra-ui/react';
 import VehicleColorIndicator from 'components/VehicleColorIndicator';
@@ -8,7 +9,7 @@ import { debounce } from 'lodash';
 import Link from 'next/link';
 import { updateVehicle, Vehicle, vehicleAPIPath } from 'queries/vehicles';
 import React, { useCallback } from 'react';
-import { editVehiclePath } from 'utils/resources';
+import { editVehiclePath, vehicleImportPath } from 'utils/resources';
 
 export interface VehicleActionsMenuProps {
     vehicle: Vehicle | undefined;
@@ -19,8 +20,9 @@ export const VehicleActionsMenu: React.FC<VehicleActionsMenuProps> = ({ vehicle 
 
     const handleUpdateVehicle = (nextOptions: Partial<Vehicle>) => {
         if (!vehicle) return;
+
         mutate(vehicleAPIPath(vehicle.id), { ...vehicle, ...nextOptions }, false);
-        updateVehicleMutation(vehicle.id, nextOptions);
+        updateVehicleMutation({ id: vehicle.id, ...nextOptions });
     };
 
     const debouncedUpdate = useCallback(debounce(handleUpdateVehicle, 200), [vehicle]);
@@ -66,14 +68,17 @@ export const VehicleActionsMenu: React.FC<VehicleActionsMenuProps> = ({ vehicle 
                     <MenuItem closeOnSelect={false} as="label" htmlFor="color">
                         Change color
                         <Spacer />
-                        <input
-                            type="color"
-                            id="color"
-                            name="color"
-                            value={vehicle.color ?? ''}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={handleColorChange}
-                        />
+                        <Box display="none">
+                            <input
+                                type="color"
+                                id="color"
+                                name="color"
+                                value={vehicle.color ?? ''}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={handleColorChange}
+                            />
+                        </Box>
+                        <VehicleColorIndicator color={vehicle?.color} />
                     </MenuItem>
 
                     <MenuItem
@@ -100,7 +105,11 @@ export const VehicleActionsMenu: React.FC<VehicleActionsMenuProps> = ({ vehicle 
 
                     <MenuDivider />
 
-                    <MenuItem>Import records from CSV</MenuItem>
+                    <Link href={vehicleImportPath(vehicle.id)} passHref>
+                        <MenuItem as="a">
+                            Import records
+                        </MenuItem>
+                    </Link>
                     <MenuItem as="a" href={`${vehicleAPIPath(vehicle.id)}/export`} target="_blank">
                         Export records to CSV
                     </MenuItem>
