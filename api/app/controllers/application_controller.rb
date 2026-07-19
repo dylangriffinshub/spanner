@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 include ErrorSerializer
 
 class ApplicationController < ActionController::API
@@ -8,7 +10,7 @@ class ApplicationController < ActionController::API
 
   rescue_from StandardError do |e|
     logger.debug e
-    Bugsnag.notify(e) unless ENV['development']
+    Bugsnag.notify(e)
     respond_with_error(e.message, status: 500)
   end
 
@@ -28,6 +30,7 @@ class ApplicationController < ActionController::API
   end
 
   protected
+
   def add_user_info_to_bugsnag(notification)
     notification.user = {
       email: current_user.email,
@@ -35,32 +38,26 @@ class ApplicationController < ActionController::API
     }
   end
 
-  def current_user
-    @current_user
-  end
-
-  def current_session
-    @current_session
-  end
+  attr_reader :current_user, :current_session
 
   def authenticate
     authenticate_token || render_unauthorized
   end
 
   def authenticate_token
-    authenticate_with_http_token do |token, options|
+    authenticate_with_http_token do |token, _options|
       session = Session.where(auth_token: token)
-                       .where('auth_token_valid_until > ?', Time.now)
+                       .where('auth_token_valid_until > ?', Time.zone.now)
                        .first
 
       if session
-        session.update_attributes(
+        session.update(
           ip: remote_ip,
-          last_seen: Time.now,
-          auth_token_valid_until: Time.now + 2.months
+          last_seen: Time.zone.now,
+          auth_token_valid_until: 2.months.from_now
         )
 
-        session.user.update_attributes(time_zone_offset: time_zone_offset)
+        session.user.update(time_zone_offset: time_zone_offset)
 
         @current_session = session
         @current_user = session.user
@@ -73,7 +70,7 @@ class ApplicationController < ActionController::API
   end
 
   def time_zone_offset
-    request.headers['HTTP_TIME_ZONE_OFFSET'] || "0"
+    request.headers['HTTP_TIME_ZONE_OFFSET'] || '0'
   end
 
   def render_unauthorized

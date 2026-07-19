@@ -1,9 +1,9 @@
+# frozen_string_literal: true
+
 class User < ApplicationRecord
-  validates_presence_of :email
+  validates :email, presence: true
 
   store_accessor :preferences
-
-  serialize :preferences, ::UserPreferences
 
   has_many :sessions, dependent: :destroy
   has_many :vehicles, dependent: :destroy
@@ -11,6 +11,17 @@ class User < ApplicationRecord
   has_many :records, through: :vehicles
 
   before_save { |user| user.email = user.email.strip.downcase }
+
+  def preferences
+    @preferences ||= UserPreferences.new(self[:preferences] || {})
+  end
+
+  def preferences=(value)
+    # Accepts either a UserPreferences object or a hash
+    prefs_hash = value.is_a?(UserPreferences) ? value.to_hash : value
+    self[:preferences] = prefs_hash
+    @preferences = UserPreferences.new(prefs_hash)
+  end
 
   def self.expired_sessions
     includes(:sessions).where(sessions: { user_id: nil })
@@ -25,11 +36,11 @@ class User < ApplicationRecord
   end
 
   def demo_account?
-    email == 'demo@spanner'
+    email == ENV['DEMO_USER']
   end
 
   def can_access_analytics?
-    ['nic@nicinabox.com'].include? email
+    [ENV['ANALYTICS_USER']].include? email
   end
 
   def active_sessions?
@@ -37,6 +48,6 @@ class User < ApplicationRecord
   end
 
   def last_seen
-    sessions.order('last_seen').last.last_seen
+    sessions.order(:last_seen).last.last_seen
   end
 end

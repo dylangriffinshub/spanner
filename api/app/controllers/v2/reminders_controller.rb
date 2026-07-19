@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module V2
   class RemindersController < ApplicationController
     def index
@@ -22,7 +24,7 @@ module V2
     def update
       reminder = reminders.find(params[:id])
 
-      reminder.update_attributes!(reminder_params)
+      reminder.update!(reminder_params)
       render json: reminder
     end
 
@@ -30,7 +32,7 @@ module V2
       record = reminders.find(params[:id])
 
       record.destroy!
-      render :success
+      head :no_content
     end
 
     def estimate_date
