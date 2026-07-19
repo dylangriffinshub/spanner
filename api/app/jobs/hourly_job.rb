@@ -1,6 +1,4 @@
-class HourlyRemindersJob < ApplicationJob
-  queue_as :default
-
+class HourlyJob < ApplicationJob
   def perform
     today_reminders_in_timezone
   end
@@ -13,7 +11,10 @@ class HourlyRemindersJob < ApplicationJob
 
     users.each do |user|
       reminders = user.reminders.where(reminder_date: date.beginning_of_day..date.end_of_day)
-      RemindersMailer.reminder_today(user, reminders).deliver_now
+
+      if reminders.any?
+        RemindersMailer.reminder_today(user, reminders).deliver_now
+      end
     end
   end
 end

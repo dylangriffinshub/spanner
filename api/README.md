@@ -51,13 +51,12 @@ Locally:
 
     whenever | pbcopy
 
-Replace everything on Dokku:
+Server:
 
-    crontab -e
+    vim /etc/cron.d/spanner-job
 
 `grep CRON /var/log/syslog` to see the output log for troubleshooting.
 
-
 ## Deploy
 
-    git push dokku master
+    git push ash master

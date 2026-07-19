@@ -1,8 +1,7 @@
-class DailyRemindersJob < ApplicationJob
-  queue_as :default
-
+class DailyJob < ApplicationJob
   def perform
     upcoming_reminders
+    delete_expired_sessions
   end
 
   def upcoming_reminders
@@ -12,6 +11,10 @@ class DailyRemindersJob < ApplicationJob
     users.each do |user, reminders|
       RemindersMailer.reminder_upcoming(user, reminders).deliver_now
     end
+  end
+
+  def delete_expired_sessions
+    Session.expired.delete_all
   end
 
   private
