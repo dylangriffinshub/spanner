@@ -1,8 +1,10 @@
 class User < ApplicationRecord
+  validates_presence_of :email
+
   has_many :vehicles, dependent: :destroy
   has_many :sessions, dependent: :destroy
 
-  validates_presence_of :email
+  before_save { |user| user.email = user.email.downcase }
 
   def user_id
     id

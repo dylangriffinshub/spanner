@@ -1,9 +1,9 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  reminder: MyString
-  vehicle_id: 
+  notes: Rotate tires
+  vehicle_id: 1
 
 two:
-  reminder: MyString
-  vehicle_id: 
+  notes: Oil change
+  vehicle_id: 2
