@@ -7,6 +7,10 @@ class User < ApplicationRecord
 
   before_save { |user| user.email = user.email.strip.downcase }
 
+  def self.expired_sessions
+    includes(:sessions).where(sessions: { user_id: nil })
+  end
+
   def time_zone
     ActiveSupport::TimeZone[(time_zone_offset || 0).to_f]
   end
@@ -21,5 +25,13 @@ class User < ApplicationRecord
 
   def can_access_analytics?
     ['nic@nicinabox.com'].include? email
+  end
+
+  def active_sessions?
+    sessions.active.any?
+  end
+
+  def last_seen
+    sessions.order('last_seen').last.last_seen
   end
 end
