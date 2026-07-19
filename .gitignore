@@ -1,8 +1,9 @@
-# Git worktrees
+.vscode
+
+# Agents
 .worktrees/
-
-# Claude Code
 .claude/
-
-# Project-local logs
+.pi/
+.cline/
+docs/
 log/

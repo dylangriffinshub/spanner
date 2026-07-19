@@ -4,7 +4,7 @@ require:
 AllCops:
   NewCops: enable
   Exclude:
-    - "db/**/*"
+    - "db/migrate/**/*"
     - "bin/**/*"
     - "node_modules/**/*"
     - "vendor/**/*"
@@ -23,6 +23,8 @@ Metrics/AbcSize:
 
 Metrics/ClassLength:
   Max: 150
+  Exclude:
+    - "test/**/*"
 
 Metrics/BlockLength:
   Exclude:

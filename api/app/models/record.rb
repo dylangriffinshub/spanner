@@ -6,6 +6,11 @@ class Record < ApplicationRecord
   validate :mileage_less_than_leading_record
 
   belongs_to :vehicle
+
+  has_many_attached :attachments, dependent: :purge
+
+  MAX_ATTACHMENT_SIZE = 10.megabytes
+
   has_many :record_classifications, dependent: :destroy
   has_many :classifications, through: :record_classifications
 
@@ -13,7 +18,7 @@ class Record < ApplicationRecord
 
   after_update :update_mileage_reminders
   after_destroy :update_mileage_reminders
-  after_save :update_mileage_reminders, :classify_notes
+  after_save :update_mileage_reminders, :classify_notes, :advance_matching_service_schedules
 
   def mileage_greater_than_trailing_record
     return if mileage.nil? || mileage.zero?
@@ -58,5 +63,10 @@ class Record < ApplicationRecord
         confidence: result[:confidence]
       )
     end
+  end
+
+  def advance_matching_service_schedules
+    matching_schedules = vehicle.service_schedules.where(classification_id: classifications.pluck(:id))
+    matching_schedules.each(&:recalculate_next_due)
   end
 end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Rails.application.configure do
-  host = 'https://spanner.nicinabox.com'
+  host = ENV.fetch('APP_URL', 'http://localhost:3000')
   api_host = ENV.fetch('API_HOST', nil)
 
   # Settings specified here will take precedence over those in config/application.rb.
@@ -59,11 +59,26 @@ Rails.application.configure do
 
   config.action_mailer.asset_host = api_host
 
-  config.action_mailer.delivery_method = :postmark
+  # SMTP as fallback for self-hosted (set first, may be overridden by Postmark)
+  if ENV['SMTP_HOST'].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address: ENV['SMTP_HOST'],
+      port: ENV.fetch('SMTP_PORT', 587).to_i,
+      user_name: ENV.fetch('SMTP_USERNAME', nil),
+      password: ENV.fetch('SMTP_PASSWORD', nil),
+      authentication: :plain,
+      enable_starttls_auto: true
+    }
+  end
 
-  config.action_mailer.postmark_settings = {
-    api_token: ENV.fetch('POSTMARK_API_KEY', nil)
-  }
+  # Postmark takes priority — overwrites SMTP if both are configured
+  if ENV['POSTMARK_API_KEY'].present?
+    config.action_mailer.delivery_method = :postmark
+    config.action_mailer.postmark_settings = {
+      api_token: ENV['POSTMARK_API_KEY']
+    }
+  end
 
   config.action_mailer.default_url_options = {
     host: host
@@ -95,4 +110,14 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
+
+  # Active Storage: defaults to S3-compatible storage (Railway buckets, AWS S3,
+  # R2, MinIO, etc.). Self-hosters without S3 can set ACTIVE_STORAGE_SERVICE=local
+  # to use disk storage (requires a persistent volume mount).
+  config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE', 'amazon').to_sym
+  config.active_storage.service_urls_expire_in = 5.minutes
+
+  Rails.application.routes.default_url_options[:host] = URI.parse(ENV.fetch('APP_URL', 'http://localhost:3000')).host
+  Rails.application.routes.default_url_options[:protocol] =
+    ENV.fetch('APP_URL', 'http://localhost:3000').start_with?('https') ? 'https' : 'http'
 end

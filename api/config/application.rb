@@ -12,6 +12,7 @@ require 'action_mailer/railtie'
 require 'action_view/railtie'
 require 'action_cable/engine'
 # require "sprockets/railtie"
+require 'active_storage/engine'
 require 'rails/test_unit/railtie'
 
 # Require the gems listed in Gemfile, including any gems
@@ -30,6 +31,7 @@ module SpannerApi
     config.api_only = true
 
     config.autoload_paths << Rails.root.join('lib')
+    config.autoload_paths << Rails.root.join('app/services/channels')
 
     config.active_job.queue_adapter = :queue_classic
     config.action_mailer.deliver_later_queue_name = 'default'

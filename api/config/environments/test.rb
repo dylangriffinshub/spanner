@@ -36,6 +36,13 @@ Rails.application.configure do
   # ActionMailer::Base.deliveries array.
   config.action_mailer.delivery_method = :test
 
+  # Make EmailChannel available in tests (actual delivery uses :test adapter)
+  ENV['POSTMARK_API_KEY'] ||= 'test-key'
+
+  # Use the test queue adapter so Active Job jobs can be performed inline
+  # during tests (e.g. perform_enqueued_jobs).
+  config.active_job.queue_adapter = :test
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
@@ -45,4 +52,10 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  # Active Storage: use a temporary disk service for tests.
+  config.active_storage.service = :test
+
+  Rails.application.routes.default_url_options[:host] = 'localhost:3001'
+  Rails.application.routes.default_url_options[:protocol] = 'http'
 end

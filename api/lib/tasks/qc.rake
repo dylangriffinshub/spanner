@@ -36,4 +36,14 @@ namespace :qc do
   task hourly_jobs: :environment do
     HourlyJob.perform_later
   end
+
+  desc 'Run account cleanup (enqueues job, requires worker)'
+  task cleanup: :environment do
+    CleanupUnverifiedAccountsJob.perform_later
+  end
+
+  desc 'Run account cleanup synchronously (no worker needed)'
+  task cleanup_now: :environment do
+    CleanupUnverifiedAccountsJob.new.perform
+  end
 end
