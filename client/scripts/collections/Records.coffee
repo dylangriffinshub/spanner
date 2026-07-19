@@ -13,10 +13,11 @@ class App.Records extends Thorax.Collection
     return unless mpd
 
     last        = @last().toJSON()
-    elapsedDays = moment().diff(last.date, 'days')
+    elapsedDays = moment().subtract(1, 'day')
+                          .diff(last.date, 'days')
 
     currentMileage = last.mileage + (elapsedDays * mpd)
-    Math.floor(currentMileage / 10) * 10
+    currentMileage
 
   milesPerYear: ->
     ONE_YEAR = 365
@@ -62,6 +63,8 @@ class App.Records extends Thorax.Collection
 
     first = @first().toJSON()
     last  = @last().toJSON()
+
+    return unless last.mileage
 
     elapsedDays    = moment(last.date).diff(first.date, 'days')
     elapsedMileage = last.mileage - first.mileage
