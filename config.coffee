@@ -40,6 +40,8 @@ config =
         'node_modules/backbone.localstorage/backbone.localStorage.js'
         'bower_components/bootstrap-sass/dist/js/bootstrap.js'
         'bower_components/jquery-ui-sortable/jquery-ui-sortable.js'
+        'bower_components/jquery-autosize/jquery.autosize.js'
+        'bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js'
       ]
 
 module.exports = config

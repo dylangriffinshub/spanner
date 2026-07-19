@@ -10,7 +10,6 @@ class App.VehicleView extends Thorax.View
     'click .js-add-service': 'showAddServicePopover'
     'click .js-add-reminder': 'showAddReminderPopover'
     'click .js-remove-record': 'removeRecord'
-    'click .js-reminder': 'showEditReminderPopover'
 
     'keyup #filter': 'filterRecords'
     'submit #header form': (e) -> e.preventDefault()
@@ -18,21 +17,25 @@ class App.VehicleView extends Thorax.View
 
   initialize: (id) ->
     @vehicles = App.vehicles
-    @model    =  @vehicles.get(id)
+    @model    = @vehicles.get(id)
 
     @reminders  = new App.Reminders [], vehicleId: id
     @collection = new App.Records [], vehicleId: id
-    @records    = @collection.groupByYear()
 
     @listenTo @vehicles, 'sync', ->
       @setModel @vehicles.get(id)
+      @recordsView.setModel @model
 
     @listenTo @collection, 'add sync remove', ->
-      @records      = @collection.groupByYear()
       @milesPerYear = @collection.milesPerYear()
       @render()
 
     @sessionView = new App.SessionView
+    @recordsView = new App.RecordsView
+      collection: @collection
+
+    @remindersView = new App.RemindersView
+      collection: @reminders
 
     @vehicles.fetch()
     @collection.fetch()
@@ -59,16 +62,17 @@ class App.VehicleView extends Thorax.View
     App.popover.toggle
       title: 'Add Service'
       elem: e.currentTarget
+      focus: '[name=mileage]'
       view: new App.AddServiceView
         collection: @collection
-        model: @model
+        vehicle: @model.toJSON()
 
   showAddReminderPopover: (e) ->
     App.popover.toggle
       title: 'Add Reminder'
       elem: e.currentTarget
       view: new App.AddReminderView
-        model: @model
+        vehicle: @model
         collection: @reminders
 
   showVehiclesPopover: (e) ->
@@ -92,11 +96,3 @@ class App.VehicleView extends Thorax.View
       view: new App.VehicleSettingsView
         model: @model
         collection: @collection
-
-  showEditReminderPopover: (e) ->
-    App.popover.toggle
-      elem: e.currentTarget
-      title: 'Edit Reminder'
-      view: new App.AddReminderView
-        model: $(e.currentTarget).model()
-        collection: @reminders

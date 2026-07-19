@@ -58,30 +58,14 @@
     margin-bottom: 40px;
   }
 
-  tr:hover {
-    .actions {
-      opacity: 0.5;
-    }
+  tr {
+    cursor: pointer;
   }
 
-  .actions {
-    opacity: 0;
-    @include transition(opacity 200ms ease-out);
-
-    a {
-      @extend .text-muted;
-    }
-
-    &:hover {
-      opacity: 1 !important;
-
-      .remove-record {
-        @extend .text-danger;
-      }
-    }
-  }
 }
 
 #reminders {
-  color: #F5A623;
+  a {
+    color: #F5A623;
+  }
 }

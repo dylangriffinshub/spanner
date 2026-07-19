@@ -83,6 +83,20 @@ router.route('/vehicles/:vehicleId/records')
   });
 
 router.route('/vehicles/:vehicleId/records/:id')
+  .put(function(req, res) {
+    Record.findById(req.params.id, function(err, record) {
+      if (err) res.send(err);
+      _.merge(record, req.body);
+
+      record.save(function(err) {
+        if (err) res.send(err);
+
+        res.json(record);
+      });
+
+    });
+  })
+
   .delete(function(req, res) {
     Record.remove({
       _id: req.params.id
@@ -111,6 +125,19 @@ router.route('/vehicles/:vehicleId/reminders')
   });
 
 router.route('/vehicles/:vehicleId/reminders/:id')
+  .put(function(req, res) {
+    Reminder.findById(req.params.id, function(err, reminder) {
+      if (err) res.send(err);
+      _.merge(reminder, req.body);
+
+      reminder.save(function(err) {
+        if (err) res.send(err);
+        res.json(reminder);
+      });
+
+    });
+  })
+
   .delete(function(req, res) {
     Reminder.remove({
       _id: req.params.id

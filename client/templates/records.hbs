@@ -1,0 +1,21 @@
+<div id="records">
+  {{#each records}}
+    <div class="record-year">
+      <h3>{{year}}</h3>
+      <table class="table table-striped">
+        {{#each records}}
+          <tr data-id="{{_id}}">
+            <td class="date">{{formatDate 'MMM DD' date}}</td>
+            <td class="mileage">{{formatNumber '000,000' mileage}}</td>
+
+            {{#if ../../settings.enableCost}}
+              <td class="cost">{{formatNumber '$0' cost}}</td>
+            {{/if}}
+
+            <td class="notes">{{notes}}</td>
+          </tr>
+        {{/each}}
+      </table>
+    </div>
+  {{/each}}
+</div>
