@@ -6,35 +6,33 @@ import useFormData from 'hooks/useFormData';
 import { mutate, useMutation } from 'hooks/useRequest';
 import { createRecord } from 'queries/records';
 import { Vehicle, vehiclePath } from 'queries/vehicles';
-import { formatNumber } from 'utils/number';
 import { formatEstimatedMileage } from 'utils/vehicle';
+import FormErrors from 'components/FormErrors';
 
 export interface MileageAdjustmentFormProps {
     vehicle: Vehicle;
 }
 
 export const MileageAdjustmentForm: React.FC<MileageAdjustmentFormProps> = ({ vehicle }) => {
-    const { mutate: mutateVehicleRecord, isProcessing, isComplete } = useMutation(createRecord);
+    const { mutate: mutateVehicleRecord, isProcessing, isComplete, error } = useMutation(createRecord);
 
     const { formData, getFormFieldProps } = useFormData({
         mileage: '',
     });
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
-        try {
-            await mutateVehicleRecord(vehicle.id, {
-                date: format(new Date(), 'yyyy-MM-dd'),
-                notes: 'Milege adjustment',
-                mileage: Number(formData.mileage),
-                recordType: 'mileage adjustment',
-            });
-
-            mutate(vehiclePath(vehicle.id));
-        } catch (err) {
-            console.error(err)
-        }
+        mutateVehicleRecord(vehicle.id, {
+            date: format(new Date(), 'yyyy-MM-dd'),
+            notes: 'Milege adjustment',
+            mileage: Number(formData.mileage),
+            recordType: 'mileage adjustment',
+        }, {
+            onSuccess() {
+                mutate(vehiclePath(vehicle.id));
+            },
+        });
     }
 
     if (isComplete) {
@@ -50,6 +48,10 @@ export const MileageAdjustmentForm: React.FC<MileageAdjustmentFormProps> = ({ ve
 
     return (
         <form onSubmit={handleSubmit}>
+            {error && 'errors' in error && (
+                <FormErrors errors={error.errors} />
+            )}
+
             <FormControl mb={4} id="mileage" isRequired>
                 <FormLabel>Enter your current mileage</FormLabel>
                 <Input type="number" {...getFormFieldProps('mileage')} autoFocus />

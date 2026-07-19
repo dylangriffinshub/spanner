@@ -1,4 +1,5 @@
 import { AxiosInstance } from 'axios';
+import { VehicleReminder } from './reminders';
 
 export interface Vehicle {
     id: number;
@@ -14,7 +15,8 @@ export interface Vehicle {
     milesPerYear: number;
     estimatedMileage: number;
     squishVin: number;
-    reminders: string;
+    reminders: VehicleReminder[];
+    color: string;
 }
 
 interface VehicleParams {
@@ -40,17 +42,20 @@ export async function fetchVehicle(api: AxiosInstance, vehicleId: string) {
     return data;
 }
 
-export function updateVehicle(api: AxiosInstance, vehicleId: number, params: Partial<VehicleParams>) {
-    return api.put(vehiclePath(vehicleId), params);
+export async function updateVehicle(api: AxiosInstance, vehicleId: number, params: Partial<VehicleParams>) {
+    const { data } = await api.put(vehiclePath(vehicleId), params);
+    return data;
 }
 
-export function createVehicle(api: AxiosInstance, params: VehicleParams) {
-    return api.post(vehiclesPath, params);
+export async function createVehicle(api: AxiosInstance, params: VehicleParams) {
+    const { data } = await api.post(vehiclesPath, params);
+    return data;
 }
 
-//   export function destroyVehicle(vehicleId) {
-//     return destroy(`/vehicles/${vehicleId}`, DESTROY_VEHICLE)
-//   }
+export async function destroyVehicle(api: AxiosInstance, vehicleId: number) {
+    const { data } = await api.delete(vehiclePath(vehicleId));
+    return data;
+}
 
 //   export function exportRecords(vehicleId) {
 //     return get(`/vehicles/${vehicleId}/export`, EXPORT_VEHICLE)

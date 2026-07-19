@@ -1,9 +1,10 @@
-import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { Box, Button, Heading, SimpleGrid } from '@chakra-ui/react';
+import { AddIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { Box, Button, Heading, HStack, SimpleGrid } from '@chakra-ui/react';
 import Header from 'components/Header';
 import Logo from 'components/Logo';
 import Page from 'components/Page';
 import VehicleItem from 'components/VehicleItem';
+import Link from 'next/link';
 import { fetchVehicles, Vehicle } from 'queries/vehicles';
 import React, { useState } from 'react';
 import { fetchInitialData } from 'utils/queries';
@@ -24,17 +25,25 @@ const Vehicles: React.FC<VehiclesProps> = ({ data, error }) => {
     return (
         <Page
             maxW="container.xl"
-            Header={() => (
+            Header={
                 <Header
                     CenterComponent={<Logo height={30} />}
                 />
-            )}>
+            }>
 
             <Box height={12} />
 
-            <Heading fontSize="xl">
-                Vehicles
-            </Heading>
+            <HStack spacing={4}>
+                <Heading fontSize="xl">
+                    Vehicles
+                </Heading>
+                <Link href="/vehicles/new" passHref>
+                    <Button as="a" leftIcon={<AddIcon />} size="xs" variant="ghost" colorScheme="brand">
+                        New Vehicle
+                    </Button>
+                </Link>
+            </HStack>
+
             <SimpleGrid columns={3} spacing={5} mt={3}>
                 {activeVehicles.map(((vehicle) => {
                     return <VehicleItem key={vehicle.id} vehicle={vehicle} />
