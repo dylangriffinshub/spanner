@@ -1,4 +1,7 @@
 Rails.application.configure do
+  host = 'https://spanner.nicinabox.com'
+  api_host = 'https://spanner-api.apps.nicinabox.com'
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -18,9 +21,8 @@ Rails.application.configure do
   # Apache or NGINX already handles this.
   config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
 
-
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  # config.action_controller.asset_host = 'http://assets.example.com'
+  config.action_controller.asset_host = api_host
 
   # Specifies the header that your server uses for sending files.
   # config.action_dispatch.x_sendfile_header = 'X-Sendfile' # for Apache
@@ -49,6 +51,8 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "spanner-api_#{Rails.env}"
   config.action_mailer.perform_caching = false
 
+  config.action_mailer.asset_host = api_host
+
   config.action_mailer.delivery_method = :postmark
 
   config.action_mailer.postmark_settings = {
@@ -56,7 +60,7 @@ Rails.application.configure do
   }
 
   config.action_mailer.default_url_options = {
-    host: 'https://spanner.nicinabox.com'
+    host: host
   }
 
   # Ignore bad email addresses and do not raise email delivery errors.
