@@ -3,8 +3,7 @@ class App.ApplicationRouter extends Backbone.Router
     '': 'welcome'
     'vehicles': 'vehicles'
     'vehicles/:id': 'vehicle'
-    'vehicles/:id/details': 'vehicleDetails'
-    'login/:uid/:token': 'login'
+    'sessions/:token': 'login'
 
   constructor: ->
     _.each @routes, (method, route) ->
@@ -27,8 +26,5 @@ class App.ApplicationRouter extends Backbone.Router
     App.layout.setView view
     App.currentView = view
 
-  login: (uid, token) ->
-    App.session.authorize({
-      uid: uid
-      token: token
-    })
+  login: (token) ->
+    App.session.login(token)

@@ -11,24 +11,19 @@ App =
 
     @vehicles = new App.Vehicles
 
-    $.when(@session.authorize())
-      .then( =>
-        @session.on 'auth:resolve', =>
-          fragment = Backbone.history.fragment
-          if !fragment or /login/.test(fragment)
-            App.router.redirectTo 'vehicles'
+    @session.on 'auth:resolve', =>
+      if !Backbone.History.started
+        Backbone.history.start(pushState: true)
 
-        @session.on 'auth:reject', ->
-          App.router.redirectTo ''
+      @router.redirectTo 'vehicles'
 
-        Backbone.history.start()
+    @session.on 'auth:reject', =>
+      if !Backbone.History.started
+        Backbone.history.start(pushState: true)
 
-        if @session.isAuthorized()
-          @vehicles.fetch()
-          @session.trigger 'auth:resolve'
-        else
-          @session.trigger 'auth:reject'
-      )
+      @router.redirectTo ''
+
+    @session.authorize()
 
 _.bindAll App
 window.App = App

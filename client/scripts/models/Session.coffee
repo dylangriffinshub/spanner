@@ -1,15 +1,18 @@
 class App.Session extends Thorax.Model
-  urlRoot: '/session'
-  idAttribute: 'uid'
+  urlRoot: '/api/sessions'
 
   initialize: ->
-    @on 'change:token', @onChangeToken
+    @on 'change:auth_token', @onChangeToken
 
-  toRequestJSON: ->
-    _.pick(@toJSON(), 'uid', 'token')
-
-  login: (data) ->
+  requestSession: (data) ->
     @save(data)
+
+  login: (loginToken) ->
+    $.ajax
+      url: [@urlRoot, loginToken].join('/')
+      dataType: 'json'
+      success: (response) =>
+        @authorize(response)
 
   logout: ->
     @destroy()
@@ -23,13 +26,16 @@ class App.Session extends Thorax.Model
       localStorage.setItem 'session', JSON.stringify(@toJSON())
     else
       data = JSON.parse(localStorage.getItem('session'))
-      @set(data) if data
+      if data
+        @set(data)
+      else
+        @onChangeToken()
 
   unauthorize: ->
     @logout()
 
   isAuthorized: ->
-    !!@get 'token'
+    !!@get 'auth_token'
 
   onChangeToken: ->
     if @isAuthorized()
