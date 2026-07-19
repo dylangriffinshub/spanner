@@ -12,6 +12,7 @@ import { VehicleRecord, vehicleRecordsPath } from 'queries/records';
 import { Vehicle, vehiclePath } from 'queries/vehicles';
 import React from 'react';
 import { parseDateISO } from 'utils/date';
+import VehicleStats from 'components/VehicleStats';
 
 export interface VehicleServiceProps {
     vehicleId: string;
@@ -25,7 +26,7 @@ export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => 
         const re = new RegExp(query, 'gi');
         const date = intlFormat(parseDateISO(item.date), { month: 'short', year: 'numeric', day: 'numeric' });
 
-        return re.test(item.notes) || re.test(date);
+        return re.test(item.notes) || re.test(date) || re.test(item.mileage.toString());
     });
 
     const anyLoading = vehicleLoading || recordsLoading;
@@ -37,6 +38,10 @@ export const VehicleService: React.FC<VehicleServiceProps> = ({ vehicleId }) => 
 
     return (
         <Container maxW="container.xl">
+            {vehicle && records && (
+                <VehicleStats vehicle={vehicle} records={records} />
+            )}
+
             <Flex mb={6}>
                 <HStack spacing={6}>
                     <Link href={`/vehicles/${vehicleId}/add`} passHref>
