@@ -4,7 +4,6 @@ class DailyJob < ApplicationJob
   queue_as :low_priority
 
   def perform
-    puts "Performing daily job"
     upcoming_reminders
     delete_expired_sessions
   end
@@ -14,7 +13,10 @@ class DailyJob < ApplicationJob
     users = reminders.group_by { |r| r.vehicle.user }
 
     users.each do |user, reminders|
+      next unless user.reminder_eligible?
+
       RemindersMailer.reminder_upcoming(user, reminders).deliver_now
+      user.record_reminder_sent!
     end
   end
 

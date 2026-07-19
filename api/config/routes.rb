@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'constraints/api_constraint'
 
 Rails.application.routes.draw do
@@ -10,6 +12,8 @@ Rails.application.routes.draw do
   end
 
   scope module: :v2, constraints: ApiConstraint.new(version: 2) do
+    resources :classifications, only: :index
+
     resources :vehicles do
       get 'reminders/estimate_date', to: 'reminders#estimate_date'
       resources :reminders
@@ -30,7 +34,5 @@ Rails.application.routes.draw do
 
     delete 'sessions/:id', to: 'sessions#destroy'
     get 'sessions', to: 'sessions#index'
-
-    get 'analytics', to: 'analytics#index'
   end
 end

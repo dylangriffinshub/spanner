@@ -4,7 +4,6 @@ class WeekendJob < ApplicationJob
   queue_as :low_priority
 
   def perform
-    puts "Performing weekend job"
     prompt_to_add_new_record
   end
 
@@ -15,6 +14,6 @@ class WeekendJob < ApplicationJob
                .group('vehicles.id')
                .having('count(vehicle_id) > 2')
 
-    vehicles.each(&:prompt_to_add_new_record!)
+    vehicles.each(&:prompt_for_new_record!)
   end
 end

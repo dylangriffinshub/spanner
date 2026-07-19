@@ -20,15 +20,13 @@ module V2
         PromptUserMailer.add_first_vehicle(user).deliver_later wait: 5.minutes
       end
 
-      return head :no_content if user.demo_account?
-
       if user
         login_token = SecureRandom.urlsafe_base64
         user.update!(
           login_token: login_token,
           login_token_valid_until: 15.minutes.from_now
         )
-        puts "Login token for user #{user.email}: #{login_token}" if Rails.env.development?
+        Rails.logger.debug { "Login token for user #{user.email}: #{login_token}" } if Rails.env.development?
 
         if params[:platform] == 'mobile'
           LoginMailer.login_token(user).deliver_later
@@ -36,7 +34,7 @@ module V2
           LoginMailer.login_link(user, host: host).deliver_later
         end
 
-        render :success, status: :no_content
+        head :no_content
       else
         respond_with_errors(user)
       end
@@ -48,28 +46,8 @@ module V2
                  .first
 
       if user
-        browser = Browser.new(request.user_agent)
-        name = request.user_agent =~ /Spanner/ ? 'Spanner iOS' : browser.name
-
-        unless user.demo_account?
-          user.update!(
-            login_token: nil,
-            login_token_valid_until: 1.year.ago
-          )
-        end
-
-        session = user.sessions.build(
-          ip: remote_ip,
-          description: name || browser.name,
-          user_agent: request.user_agent,
-          last_seen: Time.zone.now,
-          auth_token: SecureRandom.urlsafe_base64(24),
-          auth_token_valid_until: 2.months.from_now
-        )
-        session.save
-        session.user.update!(time_zone_offset: time_zone_offset)
-
-        render json: session
+        create_session(user)
+        render json: user.sessions.last
       else
         respond_with_error 'Invalid or expired login link', status: 401
       end
@@ -81,6 +59,29 @@ module V2
 
       session.destroy!
       head :no_content
+    end
+
+    private
+
+    def create_session(user)
+      browser = Browser.new(request.user_agent)
+      name = request.user_agent =~ /Spanner/ ? 'Spanner iOS' : browser.name
+
+      user.update!(
+        login_token: nil,
+        login_token_valid_until: 1.year.ago
+      )
+
+      session = user.sessions.build(
+        ip: remote_ip,
+        description: name || browser.name,
+        user_agent: request.user_agent,
+        last_seen: Time.zone.now,
+        auth_token: SecureRandom.urlsafe_base64(24),
+        auth_token_valid_until: 2.months.from_now
+      )
+      session.save
+      session.user.update!(time_zone_offset: time_zone_offset)
     end
   end
 end
