@@ -2,11 +2,11 @@ import React from 'react';
 
 import { render, screen } from '@testing-library/react';
 
-import SubmitButton from '.';
+import ErrorBoundary from '.';
 
-describe('SubmitButton', () => {
+describe('ErrorBoundary', () => {
     it('renders', () => {
         const props = {};
-        expect(() => render(<SubmitButton {...props} />)).not.toThrow();
+        expect(() => render(<ErrorBoundary {...props} />)).not.toThrow();
     });
 });
