@@ -12,7 +12,6 @@ var ONE_YEAR = 31557600000
 
 var app = express()
 var apiProxy = httpProxy.createProxyServer({
-  xfwd: true,
   ignorePath: true,
   agent: isProd ? https.globalAgent : false,
   headers: {
@@ -20,14 +19,22 @@ var apiProxy = httpProxy.createProxyServer({
   }
 })
 
+var remoteIp = function (req) {
+  return req.headers['x-forwarded-for'] || req.connection.remoteAddress
+}
+
 var static = express.static(path.join(__dirname, '../public/'), { maxAge: ONE_YEAR })
 app.use('/', static)
 
 app.all('/api/*', function(req, res){
   var path = req.path.replace('/api', '')
+  console.log('Api request for', remoteIp(req))
 
   apiProxy.web(req, res, {
-    target: HOST + path
+    target: HOST + path,
+    headers: Object.assign({}, apiProxy.options.headers, {
+      'x-forwarded-for': remoteIp(req)
+    })
   })
 })
 
@@ -43,6 +50,10 @@ var handler = function (req, res) {
 }
 routes.forEach(function (route) {
   return app.get(route, handler)
+})
+
+app.get('/terms', function (req, res) {
+  return res.sendFile(path.join(__dirname, '../public/terms.html'))
 })
 
 app.listen(PORT)
