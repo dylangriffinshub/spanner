@@ -22,8 +22,10 @@ export class Vehicle extends Component {
     this.toggleVehicleMenu = this.toggleVehicleMenu.bind(this)
     this.handleAddService = this.handleAddService.bind(this)
     this.handleAddReminder = this.handleAddReminder.bind(this)
+    this.handleSearch = this.handleSearch.bind(this)
 
     this.state = {
+      search: ''
     }
   }
 
@@ -31,12 +33,19 @@ export class Vehicle extends Component {
     this.props.fetchVehicle(this.props.params.id)
   }
 
+  handleSearch(e) {
+    this.setState({
+      search: e.target.value
+    })
+  }
+
   toggleVehicleMenu(e) {
     e.preventDefault()
     Modal.open({
       el: e.currentTarget,
       children: (
-        <VehicleForm {...this.props.state.vehicle}
+        <VehicleForm
+          {...this.props.state.vehicle}
           onSubmit={(params) => {
             this.props.updateVehicle(params.id, params)
               .then(() => Modal.close())
@@ -58,6 +67,7 @@ export class Vehicle extends Component {
       el: e.currentTarget,
       children: <RecordForm
         {...record}
+        vehicle={this.props.state.vehicle}
         onSubmit={(props) => {
           this.props.createRecord(this.props.state.vehicle.id, props)
           Modal.close()
@@ -104,8 +114,12 @@ export class Vehicle extends Component {
     return (
       <div className="col-sm-4 hidden-sm hidden-xs">
         <form className="navbar-form">
-          <input type="search" name="filter" id="filter" className="form-control text-center"
-            placeholder="Search" />
+          <input
+            type="search"
+            className="form-control text-center"
+            placeholder="Search"
+            onChange={this.handleSearch}
+          />
         </form>
       </div>
     )
@@ -121,30 +135,32 @@ export class Vehicle extends Component {
         <div className="container action-bar">
           <div className="row">
             <div className="col-sm-6">
-              <nav>
-                <a href="javascript:;" onClick={this.handleAddService} className="js-add-service btn btn-secondary">
-                  + Add Service
-                </a>
-                <a href="javascript:;" onClick={this.handleAddReminder} className="js-add-reminder btn btn-secondary">
-                  + Add Reminder
-                </a>
-              </nav>
+              {!this.props.state.vehicle.retired && (
+                <nav>
+                  <a href="javascript:;" onClick={this.handleAddService} className="js-add-service btn btn-secondary">
+                    + Add Service
+                  </a>
+                  <a href="javascript:;" onClick={this.handleAddReminder} className="js-add-reminder btn btn-secondary">
+                    + Add Reminder
+                  </a>
+                </nav>
+              )}
             </div>
 
             <div className="col-sm-6">
               <div className="row text-right text-muted">
                 <div className="col-md-6">
-                  {this.props.vin ? (
+                  {this.props.state.vehicle.vin ? (
                     <p>
-                      VIN: {this.props.vin}
+                      VIN: {this.props.state.vehicle.vin}
                     </p>
                   ) : null}
                 </div>
 
-                {this.props.milesPerYear ? (
+                {this.props.state.vehicle.milesPerYear ? (
                   <div className="col-md-6">
                     <p>
-                      You drive about {this.props.milesPerYear} miles a year
+                      You drive about {this.props.state.vehicle.milesPerYear.toLocaleString()} miles a year
                     </p>
                   </div>
                 ) : null}
@@ -156,23 +172,19 @@ export class Vehicle extends Component {
         <div id="main">
           <div className="container">
             <div className="row">
-              <div className="col-sm-9">
-                <Reminders vehicleId={this.props.params.id} reminders={this.props.reminders} />
-
-                <Records vehicleId={this.props.params.id} />
+              <div className="col-sm-8">
+                <Records vehicleId={this.props.params.id} search={this.state.search} />
               </div>
 
-              <div className="col-sm-3">
-                <h5 className="">
-                  <i className="fa fa-book fa-fw"></i>
-                  Notes
-                </h5>
+              <div className="col-sm-3 col-sm-offset-1">
+                <Reminders vehicleId={this.props.params.id} reminders={this.props.reminders} />
 
                 <Notes
                   notes={this.props.state.vehicle.notes}
                   onSubmit={(notes) => {
                     this.props.updateVehicle(this.props.state.vehicle.id, { notes })
-                  }}/>
+                  }}
+                />
               </div>
             </div>
           </div>

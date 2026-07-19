@@ -1,4 +1,8 @@
 #vehicles {
+  .vehicles-row {
+    margin-bottom: 50px;
+  }
+
   .vehicle {
     @include clearfix;
     padding: 20px;
@@ -25,13 +29,13 @@
     }
 
     &.add-vehicle {
-      background-color: lighten($gray-light, 30%);
+      background-color: lighten($gray-light, 40%);
       color: $gray-light;
       text-align: center;
       font-weight: normal;
 
       &:hover {
-        background-color: lighten($gray-light, 25%);
+        background-color: lighten($gray-light, 35%);
       }
     }
   }
@@ -125,6 +129,7 @@
 
 #reminders {
   a {
-    color: #F5A623;
+    font-weight: bold;
+    display: block;
   }
 }
