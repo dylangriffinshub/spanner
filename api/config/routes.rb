@@ -13,6 +13,8 @@ Rails.application.routes.draw do
     resources :vehicles do
       resources :reminders
       resources :records
+      post :import
+      get :export
     end
 
     resources :reminders, only: :index
