@@ -11,6 +11,8 @@ import { getOverdueRemindersCount } from 'utils/reminders';
 import { vehiclesPath } from 'utils/resources';
 import { authRedirect, withSession } from 'utils/session';
 import dynamic from 'next/dynamic';
+import useRequest from 'hooks/useRequest';
+import { WarningTwoIcon } from '@chakra-ui/icons';
 
 const VehicleService = dynamic(() => import('components/VehicleService'));
 const VehicleReminders = dynamic(() => import('components/VehicleReminders'));
@@ -33,23 +35,30 @@ const PageHeader = ({ vehicle, overDueRemindersBadge }) => (
             'History',
             {
                 text: 'Reminders',
-                badge: overDueRemindersBadge,
-                badgeSentiment: 'negative',
+                children: overDueRemindersBadge
+                    ? [<WarningTwoIcon />, overDueRemindersBadge]
+                    : null,
+                badgeSentiment: 'warning',
             },
             'Notes',
         ]}
-        LeftComponent={(
+        LeftComponent={
             <HStack spacing={2} minW={0}>
                 <BackButton href={vehiclesPath()}>Vehicles</BackButton>
 
                 <VehicleActionsMenu vehicle={vehicle} />
             </HStack>
-          )}
+        }
     />
 );
 
 const VehiclePage: React.FC<VehiclePageProps> = ({ params, fallback }) => {
-    const { vehicle } = fallback;
+    const { data: vehicle } = useRequest<API.Vehicle>(
+        vehicleAPIPath(params.vehicleId),
+        {
+            fallback: fallback.vehicle,
+        },
+    );
 
     return (
         <Page
@@ -58,14 +67,14 @@ const VehiclePage: React.FC<VehiclePageProps> = ({ params, fallback }) => {
                 [vehicleAPIPath(params.vehicleId)]: fallback.vehicle,
                 [recordsAPIPath(params.vehicleId)]: fallback.records,
             }}
-            Header={(
+            Header={
                 <PageHeader
                     vehicle={vehicle}
                     overDueRemindersBadge={
                         vehicle ? getOverdueRemindersCount(vehicle) : undefined
                     }
                 />
-              )}
+            }
         >
             <TabPanels>
                 <TabPanel px={0}>
