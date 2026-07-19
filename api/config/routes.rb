@@ -2,12 +2,11 @@ require 'constraints/api_constraint'
 
 Rails.application.routes.draw do
   root 'status#index'
-  get '/.well-known/apple-app-site-association' => 'status#apple_app_site_association'
-  get '/apple-app-site-association' => 'status#apple_app_site_association'
 
   scope module: :v2 do
     post 'sessions', to: 'sessions#create'
-    get 'sessions/:login_token', to: 'sessions#login', as: :sessions_login
+
+    get 'login(/:login_token)', to: 'sessions#login'
   end
 
   scope module: :v2, constraints: ApiConstraint.new(version: 2) do
