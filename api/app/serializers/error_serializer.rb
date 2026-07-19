@@ -10,14 +10,11 @@ module ErrorSerializer
   protected
 
   def serialize_object(object)
-    object.errors.messages.map do |field, errors|
-      errors.map do |error_message|
-        {
-          source: {
-            pointer: "/data/attributes/#{field}"
-          },
-          detail: error_message
-        }
+    return if object.errors.nil?
+
+    object.errors.to_hash(true).map do |k, v|
+      v.map do |msg|
+        { id: k, title: msg }
       end
     end.flatten
   end

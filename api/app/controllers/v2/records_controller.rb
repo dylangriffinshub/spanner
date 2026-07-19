@@ -1,22 +1,37 @@
 module V2
   class RecordsController < ApplicationController
     def index
-      vehicle = Vehicle.find(params[:vehicle_id])
-      records = vehicle.records.all
-      render json: records
+      vehicle = vehicles.find(params[:vehicle_id])
+      render json: records.all
     end
 
     def create
-      record = Record.create(params[:record])
+      vehicle = vehicles.find(params[:vehicle_id])
+      record = vehicle.records.build(record_params)
+
+      record.save!
       render json: record
     end
 
     def update
+      record = vehicles.records.find(params[:id])
 
+      record.update_attributes!(reminder_params)
+      render json: record
     end
 
     def destroy
-      Record.destroy(params[:id])
+      vehicles.records.destroy(params[:id])
+    end
+
+    private
+
+    def vehicles
+      current_user.vehicles
+    end
+
+    def record_params
+      params.require(:reminder).permit(:date, :cost, :mileage, :notes)
     end
   end
 end

@@ -2,17 +2,25 @@ module V2
   class SessionsController < ApplicationController
     skip_before_action :authenticate, only: [:create, :login]
 
+    def index
+      render json: current_user.sessions
+    end
+
     def create
       user = User.find_or_create_by!(email: params[:email])
 
-      user.update!(
-        login_token: SecureRandom.urlsafe_base64,
-        login_token_valid_until: Time.now + 15.minutes
-      )
+      if user
+        user.update!(
+          login_token: SecureRandom.urlsafe_base64,
+          login_token_valid_until: Time.now + 15.minutes
+        )
 
-      LoginMailer.login_link(user).deliver
+        LoginMailer.login_link(user).deliver
 
-      render :success, status: 204
+        render :success, status: 204
+      else
+        respond_with_errors(user)
+      end
     end
 
     def login
@@ -39,8 +47,11 @@ module V2
     end
 
     def destroy
-      @current_session.destroy!
-      render :success, status: 204
+      session = current_user.sessions.find(params[:id])
+      if session
+        session.destroy!
+        render :success, status: 204
+      end
     end
   end
 end
