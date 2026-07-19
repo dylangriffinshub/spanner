@@ -7,8 +7,9 @@
 	import { intlFormatDateUTC } from '$lib/utils/date';
 	import { formatMileage } from '$lib/utils/vehicle';
 	import { Bell, ChevronRight, PlusIcon } from 'lucide-svelte';
-	import { isReminderOverdue } from '$lib/utils/reminders';
+	import { isReminderOverdue, sortRemindersByDue } from '$lib/utils/reminders';
 	import type { PageProps } from './$types';
+	import { pageTitle } from '$lib/utils/site';
 
 	let { data }: PageProps = $props();
 
@@ -20,7 +21,13 @@
 	);
 
 	let completingId = $state<number | null>(null);
+
+	let sortedReminders = $derived(sortRemindersByDue(reminders, vehicle.estimatedMileage));
 </script>
+
+<svelte:head>
+	<title>{pageTitle('Reminders', data.vehicle.name)}</title>
+</svelte:head>
 
 <VehiclePageLayout {vehicle} {activeTab}>
 	<div class="max-w-2xl mx-auto">
@@ -32,7 +39,7 @@
 				</Button>
 			</header>
 			<ul class="space-y-3">
-				{#each reminders as reminder (reminder.id)}
+				{#each sortedReminders as reminder (reminder.id)}
 					<li>
 						<Card variant="outline" size="sm" class="gap-3">
 							<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -47,15 +54,19 @@
 										{#if !reminder.reminderType}
 											No reminder set
 										{:else}
-											Reminder scheduled for
+											Due
 											{#if reminder.reminderDate || reminder.date}
-												{intlFormatDateUTC(reminder.reminderDate ?? reminder.date!)}
+												<span class="font-semibold"
+													>{intlFormatDateUTC(reminder.reminderDate ?? reminder.date!)}</span
+												>
 												{#if reminder.mileage}
 													or
 												{/if}
 											{/if}
 											{#if reminder.mileage}
-												{formatMileage(reminder.mileage, vehicle.distanceUnit)}
+												<span class="font-semibold"
+													>{formatMileage(reminder.mileage, vehicle.distanceUnit)}</span
+												>
 											{/if}
 										{/if}
 									</p>

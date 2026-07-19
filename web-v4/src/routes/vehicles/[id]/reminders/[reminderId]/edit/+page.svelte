@@ -4,8 +4,9 @@
 	import ReminderForm from '$lib/components/forms/ReminderForm.svelte';
 	import { page } from '$app/stores';
 	import type { PageProps } from './$types';
+	import { pageTitle } from '$lib/utils/site';
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	let vehicle = $derived(data.vehicle);
 	let reminder = $derived(data.reminder);
@@ -17,6 +18,10 @@
 	);
 </script>
 
+<svelte:head>
+	<title>{pageTitle('Edit Reminder', data.vehicle.name)}</title>
+</svelte:head>
+
 <VehiclePageLayout
 	{vehicle}
 	{activeTab}
@@ -25,7 +30,7 @@
 	<div class="max-w-2xl mx-auto">
 		<Card variant="outline" bleed>
 			<h1 class="text-xl font-semibold">Edit Reminder</h1>
-			<ReminderForm {vehicle} {reminder} action="?/update" />
+			<ReminderForm {vehicle} {reminder} action="?/update" errors={form?.errors} />
 		</Card>
 
 		<Card class="mt-6" variant="outline" bleed>

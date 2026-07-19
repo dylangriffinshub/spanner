@@ -7,8 +7,9 @@
 	import { page } from '$app/stores';
 	import { Bell, Gauge, PlusIcon } from 'lucide-svelte';
 	import type { PageProps } from './$types';
+	import { pageTitle } from '$lib/utils/site';
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	let vehicle = $derived(data.vehicle);
 
@@ -45,6 +46,10 @@
 	]);
 </script>
 
+<svelte:head>
+	<title>{pageTitle('Add Record', data.vehicle.name)}</title>
+</svelte:head>
+
 <VehiclePageLayout
 	{vehicle}
 	{tabs}
@@ -58,7 +63,7 @@
 			{#if view === 'record'}
 				<RecordForm {vehicle} record={{ notes: notesParam } as any} action="?/record" />
 			{:else if view === 'reminder'}
-				<ReminderForm {vehicle} action="?/reminder" />
+				<ReminderForm {vehicle} action="?/reminder" errors={form?.errors} />
 			{:else if view === 'mileage-adjustment'}
 				<MileageAdjustmentForm {vehicle} action="?/mileage-adjustment" />
 			{/if}

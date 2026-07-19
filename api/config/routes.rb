@@ -2,7 +2,7 @@
 
 require 'constraints/api_constraint'
 
-Rails.application.routes.draw do
+Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   root 'status#index'
 
   scope module: :v2 do
@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
     get 'login(/:login_token)', to: 'sessions#login', as: 'login'
     get 'confirm_email(/:token)', to: 'users#confirm_email', as: 'confirm_email'
+    get 'unsubscribe(/:token)', to: 'users#unsubscribe', as: 'unsubscribe'
 
     post 'webhooks/postmark', to: 'postmark#webhook'
   end

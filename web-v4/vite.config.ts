@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 
 	return {
+		define: {
+			__APP_VERSION__: JSON.stringify(
+				`v4.${new Date().toISOString().slice(0, 10).replaceAll('-', '.')}`,
+			),
+		},
 		server: {
 			allowedHosts: ['.local', '.ts.net'],
 		},
