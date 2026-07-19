@@ -29,6 +29,7 @@ config =
       ]
 
       vendor: [
+        'node_modules/papaparse/papaparse.js'
         'node_modules/lodash/dist/lodash.js'
         'node_modules/jquery/dist/jquery.js'
         'node_modules/handlebars/dist/handlebars.runtime.js'
@@ -38,6 +39,7 @@ config =
         'node_modules/numeral/numeral.js'
         'node_modules/backbone.localstorage/backbone.localStorage.js'
         'bower_components/bootstrap-sass/dist/js/bootstrap.js'
+        'bower_components/jquery-ui-sortable/jquery-ui-sortable.js'
       ]
 
 module.exports = config

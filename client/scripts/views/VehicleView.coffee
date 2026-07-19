@@ -7,24 +7,27 @@ class App.VehicleView extends Thorax.View
     'click #header .vehicles': 'showVehiclesPopover'
     'click #header .settings': 'showSettingsPopover'
     'click .add-service': 'showAddServicePopover'
+    'click .add-reminder': 'showAddReminderPopover'
     'click .remove-record': 'removeRecord'
     'keyup #filter': 'filterRecords'
     'submit #header form': (e) -> e.preventDefault()
 
   initialize: (id) ->
     @vehicles = App.vehicles
+    @model    =  @vehicles.get(id)
+
+    @reminders  = new App.Reminders [], vehicleId: id
+    @collection = new App.Records [], vehicleId: id
+    @records    = @collection.groupByYear()
 
     @listenTo @vehicles, 'sync', ->
       @setModel @vehicles.get(id)
-      @setCollection new App.Records vehicle_id: id
 
-      @listenTo @model, 'change', @render
-      @listenTo @collection, 'sync change destroy', ->
-        @model.set records: @collection.groupByYear()
+    @listenTo @collection, 'add sync remove', ->
+      @records = @collection.groupByYear()
+      @render()
 
-      @collection.fetch()
-
-    @vehicles.fetch()
+    @collection.fetch()
 
   filterRecords: (e) ->
     val = e.currentTarget.value
@@ -53,6 +56,15 @@ class App.VehicleView extends Thorax.View
         collection: @collection
         model: @model
 
+  showAddReminderPopover: (e) ->
+    e.preventDefault()
+    App.popover.toggle
+      title: 'Add Reminder'
+      elem: e.currentTarget
+      view: new App.AddReminderView
+        model: @model
+        collection: @reminders
+
   showVehiclesPopover: (e) ->
     e.preventDefault()
     App.popover.toggle
@@ -75,3 +87,4 @@ class App.VehicleView extends Thorax.View
       title: 'Vehicle Settings'
       view: new App.VehicleSettingsView
         model: @model
+        collection: @collection

@@ -10,13 +10,20 @@ class App.VehicleSettingsView extends Thorax.View
     this[method]()
 
   enableCost: ->
-    settings = @model.get('settings')
+    settings = @model.settings()
     @model.save
       settings:
-        enable_cost: !settings.enable_cost
+        enableCost: !settings.enableCost
+
+  importRecords: ->
+    App.popover.pushView
+      title: 'Import Records'
+      view: new App.ImportRecordsView
+        model: @model
+        collection: @collection
 
   retireVehicle: ->
-    alert 'I should probably implement this feature...'
+    alert 'Not yet implemented'
 
   removeVehicle: ->
     App.popover.pushView

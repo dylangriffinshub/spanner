@@ -17,7 +17,7 @@
         <div class="col-md-4">
           <form class="navbar-form">
             <input type="search" name="filter" id="filter" class="form-control text-center"
-              placeholder="Filter...">
+              placeholder="Filter">
           </form>
         </div>
         <div class="col-md-4">
@@ -37,7 +37,12 @@
   <div class="row">
     <div class="col-sm-12">
       <nav>
-        <a href="#" class="add-service btn btn-default">+ Add Service</a>
+        <a href="#" class="add-service btn btn-secondary">
+          + Add Service
+        </a>
+        <a href="#" class="add-reminder btn btn-secondary">
+          + Add Reminder
+        </a>
       </nav>
     </div>
   </div>
@@ -45,24 +50,40 @@
 
 <div id="main">
   <div class="container">
+    {{#empty reminders}}
+    {{else}}
+      <div id="reminders">
+        <h5 class="text-muted">
+          <span class="fa fa-clock-o fa-fw"></span>
+          Reminders
+        </h5>
+
+        {{#collection reminders tag="ul" class="list-unstyled"}}
+          <li>{{reminder}}</li>
+        {{/collection}}
+      </div>
+    {{/empty}}
+
     <div id="records">
       {{#each records}}
         <h3>{{year}}</h3>
         <table class="table table-striped">
           {{#each records}}
-            <tr data-id="{{id}}">
+            <tr data-id="{{_id}}">
               <td class="date">{{formatDate 'MMM DD' date}}</td>
               <td class="mileage">{{formatNumber '000,000' mileage}}</td>
 
-              {{#if ../../settings.enable_cost}}
+              {{#if ../../settings.enableCost}}
                 <td class="cost">{{formatNumber '$0' cost}}</td>
               {{/if}}
 
               <td class="notes">{{notes}}</td>
-              <td class="actions text-right">
-                <a href="#" class="remove-record" data-record-id="{{id}}">
-                  <i class="fa fa-trash-o text-muted"></i>
-                </a>
+              <td class="text-right">
+                <nav class="actions pull-right">
+                  <a href="#" class="remove-record" data-record-id="{{_id}}">
+                    <i class="fa fa-trash-o"></i>
+                  </a>
+                </nav>
               </td>
             </tr>
           {{/each}}

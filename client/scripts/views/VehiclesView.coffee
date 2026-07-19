@@ -1,13 +1,24 @@
 class App.VehiclesView extends Thorax.View
   name: 'vehicles'
   id: 'vehicles'
-  collection: new App.Vehicles
 
   events:
     'click .add-vehicle': 'showAddVehiclePopover'
+    'ready': 'sortable'
+
+  sortable: ->
+    _.defer =>
+      collection = @collection
+      @$('#vehicles-menu').sortable
+        placeholder: "sortable-placeholder col-md-3"
+        update: (e, ui) ->
+          $(this).children().each (i, el) ->
+            model = $(el).model()
+            model.save position: i
+          collection.sort()
 
   initialize: ->
-    @collection.fetch()
+    @collection = App.vehicles
 
   saveVehicle: (e) ->
     e.preventDefault()
@@ -19,5 +30,6 @@ class App.VehiclesView extends Thorax.View
     App.popover.toggle
       elem: e.currentTarget
       title: 'Add Vehicle'
+      top: -5
       view: new App.AddVehicleView
         collection: @collection

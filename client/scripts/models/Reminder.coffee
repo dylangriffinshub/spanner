@@ -1,5 +1,5 @@
-class App.Record extends Thorax.Model
-  validatePresence: ['date', 'notes']
+class App.Reminder extends Thorax.Model
+  validatePresence: ['reminder']
   idAttribute: '_id'
 
   validate: (attrs) ->
