@@ -9,6 +9,7 @@ class App.VehicleView extends Thorax.View
     'click .add-service': 'showAddServicePopover'
     'click .add-reminder': 'showAddReminderPopover'
     'click .remove-record': 'removeRecord'
+
     'keyup #filter': 'filterRecords'
     'submit #header form': (e) -> e.preventDefault()
 
@@ -24,10 +25,15 @@ class App.VehicleView extends Thorax.View
       @setModel @vehicles.get(id)
 
     @listenTo @collection, 'add sync remove', ->
-      @records = @collection.groupByYear()
+      @records      = @collection.groupByYear()
+      @milesPerYear = @collection.milesPerYear()
       @render()
 
+    @sessionView = new App.SessionView
+
+    @vehicles.fetch()
     @collection.fetch()
+    @reminders.fetch()
 
   filterRecords: (e) ->
     val = e.currentTarget.value
@@ -77,6 +83,7 @@ class App.VehicleView extends Thorax.View
     App.popover.toggle
       elem: e.currentTarget
       title: 'Rename Vehicle'
+      populate: true
       view: new App.RenameVehicleView
         model: @model
 
