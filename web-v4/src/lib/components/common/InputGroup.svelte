@@ -53,7 +53,9 @@
 		</span>
 	{/if}
 	{#if hasInline}
-		<div class={cn('relative flex-1', startAddon && 'rounded-l-none', endAddon && 'rounded-r-none')}>
+		<div
+			class={cn('relative flex-1', startAddon && 'rounded-l-none', endAddon && 'rounded-r-none')}
+		>
 			<Input
 				bind:ref={inputRef}
 				{variant}
@@ -78,24 +80,30 @@
 				{...rest}
 			/>
 			{#if start}
-				<button
-					type="button"
+				<div
+					role="button"
 					tabindex="-1"
-					onclick={focusInput}
-					class="absolute inset-y-0 left-0 flex items-center px-3 cursor-text text-ink-500"
+					onpointerdown={(e) => {
+						e.preventDefault();
+						focusInput();
+					}}
+					class="absolute inset-y-0 left-0 flex items-center px-3 text-ink-500"
 				>
 					{@render start()}
-				</button>
+				</div>
 			{/if}
 			{#if end}
-				<button
-					type="button"
+				<div
+					role="button"
 					tabindex="-1"
-					onclick={focusInput}
-					class="absolute inset-y-0 right-0 flex items-center px-3 cursor-text text-ink-500"
+					onpointerdown={(e) => {
+						e.preventDefault();
+						focusInput();
+					}}
+					class="absolute inset-y-0 right-0 flex items-center px-3 text-ink-500"
 				>
 					{@render end()}
-				</button>
+				</div>
 			{/if}
 		</div>
 	{:else}
