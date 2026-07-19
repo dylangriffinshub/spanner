@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
 		},
 		plugins: [
 			sentrySvelteKit({
-				org: 'nicinabox-bx',
+				org: 'dylangriffinshub',
 				project: 'spanner-web',
 				authToken: env.SENTRY_AUTH_TOKEN,
 			}),

@@ -71,7 +71,9 @@
 						class="w-full sm:w-auto [&>*:first-child]:flex-1"
 					>
 						{#snippet start()}
-							<span class="text-ink-500 text-sm font-medium">Choose from suggested</span>
+							<span class="text-ink-500 text-sm font-medium inline-block px-3"
+								>Choose from suggested</span
+							>
 						{/snippet}
 						<PlusIcon size={14} />
 						New Task
@@ -154,7 +156,6 @@
 	open={suggestOpen}
 	onOpenChange={(v) => {
 		suggestOpen = v;
-		if (!v) suggestType = null;
 	}}
 	presetGroup={suggestType ? presetGroups[suggestType] : null}
 	{existingClassificationNames}

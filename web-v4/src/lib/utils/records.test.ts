@@ -43,7 +43,9 @@ describe('sortNewestDateFirst', () => {
 			mileage: 100,
 			createdAt: '2026-01-01T10:00:00.000Z',
 		});
-		expect([firstCreated, thirdCreated, secondCreated].toSorted(sortNewestDateFirst).map((r) => r.id)).toEqual([3, 2, 1]);
+		expect(
+			[firstCreated, thirdCreated, secondCreated].toSorted(sortNewestDateFirst).map((r) => r.id),
+		).toEqual([3, 2, 1]);
 	});
 
 	it('does not reverse order of tied records (regression)', () => {

@@ -2,7 +2,7 @@
 	import { cn } from 'tailwind-variants';
 	import type { Snippet } from 'svelte';
 	import type { Session } from '$lib/data/session';
-	import Menu from './Menu.svelte';
+	import Menu from './common/Menu.svelte';
 	import ThemeToggle from './ThemeToggle.svelte';
 
 	interface Props {
@@ -67,12 +67,16 @@
 			>
 				{username}
 				{#snippet start()}
-					<span class="text-ink-500 text-sm font-medium">
-						{session.email}
-					</span>
+					<div>
+						<span class="text-ink-500 text-sm font-medium inline-block p-2 px-3">
+							{session.email}
+						</span>
+						<div class="mb-2">
+							<ThemeToggle variant="segmented" />
+						</div>
+					</div>
 				{/snippet}
 			</Menu>
-			<ThemeToggle size="sm" />
 		{/if}
 	</div>
 </header>

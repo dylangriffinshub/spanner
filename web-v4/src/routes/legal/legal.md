@@ -20,8 +20,6 @@ You can delete your account anytime. When you do, your email and all your mainte
 
 **How do I contact you about privacy?**
 
-Email me at spanner@nicinabox.com with any privacy concerns.
-
 ---
 
 # Terms of Service
@@ -45,7 +43,3 @@ Yes, I may update these terms or the service itself at any time. Major changes w
 **Who's responsible if something goes wrong?**
 
 I'm not liable for any damages, data loss, or problems that occur from using this service. You use it at your own risk.
-
-**Questions?**
-
-Email me at spanner@nicinabox.com if you have questions about these terms.
