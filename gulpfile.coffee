@@ -5,7 +5,7 @@ $      = require('gulp-load-plugins')()
 gulp.task 'default', [
   'precompile'
   'watch'
-  'server'
+  'nodemon'
 ]
 
 gulp.task 'watch', ->
@@ -19,6 +19,7 @@ gulp.task 'precompile', [
   'scripts'
   'templates'
   'styles'
+  'copy:images'
   'copy:html'
 ]
 
@@ -42,6 +43,7 @@ gulp.task 'styles', ->
   .pipe($.compass(
     css: config.paths.www.assets
     sass: config.base(config.paths.client.styles)
+    images: config.paths.www.assets
     import_path: ['node_modules', 'bower_components']
   ))
 
@@ -56,9 +58,18 @@ gulp.task 'templates', ->
     .pipe($.concat('templates.js'))
     .pipe(gulp.dest(config.paths.www.assets))
 
+gulp.task 'copy:images', ->
+  gulp.src(config.paths.client.images)
+    .pipe(gulp.dest(config.paths.www.assets))
+
 gulp.task 'copy:html', ->
   gulp.src(config.paths.client.html)
     .pipe(gulp.dest(config.paths.www.root))
+
+gulp.task 'nodemon', ->
+  $.nodemon({
+    script: config.paths.server.main
+  })
 
 gulp.task 'server', ->
   gulp.src(config.paths.www.root)
