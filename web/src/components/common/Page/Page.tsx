@@ -1,10 +1,17 @@
 import {
-    Badge, Container, ContainerProps, Flex, SimpleGrid, Tabs,
+    Badge,
+    Container,
+    ContainerProps,
+    Flex,
+    SimpleGrid,
+    Spacer,
+    Tabs,
+    useStyleConfig,
+    useToken,
 } from '@chakra-ui/react';
 import Router, { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SWRConfig } from 'swr';
-import ColorModeButton from '../ColorModeButton';
 
 export interface PageProps extends ContainerProps {
     Header?: JSX.Element;
@@ -23,12 +30,25 @@ export const parseHashParams = (url: string) => {
 export const PageContext = React.createContext<{ isShared?: boolean }>({});
 
 export const Page: React.FC<PageProps> = ({
-    children, contextValue, Header, fallback = {}, ...containerProps
+    children,
+    contextValue,
+    Header,
+    fallback = {},
+    ...containerProps
 }) => {
     const router = useRouter();
     const [panel, setPanel] = useState(0);
 
     const contextValueMemo = useMemo(() => contextValue ?? {}, [contextValue]);
+
+    const headerStyles = useStyleConfig('Header');
+    const headerBg = useToken('colors', headerStyles.bg as string);
+
+    useEffect(() => {
+        document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute('content', headerBg);
+    }, [headerBg]);
 
     useEffect(() => {
         const params = parseHashParams(router.asPath);
@@ -53,7 +73,14 @@ export const Page: React.FC<PageProps> = ({
     return (
         <PageContext.Provider value={contextValueMemo}>
             <SWRConfig value={{ fallback, revalidateOnMount: true }}>
-                <Tabs colorScheme="brandInverted" size="sm" variant="soft-rounded" isLazy lazyBehavior="keepMounted" index={panel}>
+                <Tabs
+                    colorScheme="brandInverted"
+                    size="sm"
+                    variant="soft-rounded"
+                    isLazy
+                    lazyBehavior="keepMounted"
+                    index={panel}
+                >
                     <SimpleGrid templateRows="auto 1fr auto" minH="100vh">
                         {Header}
 
@@ -62,7 +89,7 @@ export const Page: React.FC<PageProps> = ({
                         </Container>
 
                         <Flex justify="space-between" align="center" p={4}>
-                            <ColorModeButton variant="ghost" />
+                            <Spacer />
                             <Badge colorScheme="gray" textTransform="none">
                                 v3.
                                 {process.env.CONFIG_BUILD_ID ?? 'next'}
