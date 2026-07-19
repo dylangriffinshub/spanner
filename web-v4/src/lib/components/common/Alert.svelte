@@ -17,21 +17,21 @@
 	});
 
 	export type AlertVariant = VariantProps<typeof alertVariants>['variant'];
-</script>
 
-<script lang="ts">
-	import { cn } from '$lib/utils/cn';
-	import { X } from 'lucide-svelte';
-	import type { Snippet } from 'svelte';
-	import type { ClassValue } from 'svelte/elements';
-
-	type Props = {
+	export type AlertProps = {
 		variant?: AlertVariant;
 		role?: 'alert' | 'status';
 		class?: ClassValue;
 		dismissible?: boolean;
 		children: Snippet;
 	};
+</script>
+
+<script lang="ts">
+	import { cn } from 'tailwind-variants';
+	import { X } from 'lucide-svelte';
+	import type { Snippet } from 'svelte';
+	import type { ClassValue } from 'svelte/elements';
 
 	let {
 		role = 'status',
@@ -39,7 +39,7 @@
 		class: className,
 		dismissible = false,
 		children,
-	}: Props = $props();
+	}: AlertProps = $props();
 
 	let dismissed = $state(false);
 </script>

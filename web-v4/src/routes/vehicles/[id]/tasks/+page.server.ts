@@ -2,18 +2,38 @@ import { getVehicle } from '$lib/data/vehicles';
 import {
 	getServiceSchedules,
 	completeServiceSchedule,
-	deleteServiceSchedule,
 	createServiceSchedule,
 	deferServiceSchedule,
 	clearDeferServiceSchedule,
 	getPresets,
 } from '$lib/data/serviceSchedules';
-import { getVehicleReminders, deleteReminder } from '$lib/data/reminders';
+import { getVehicleReminders } from '$lib/data/reminders';
 import { getClassifications } from '$lib/data/classifications';
 import { uploadRecord, toMultipartFormData } from '$lib/data/multipart';
+import { withActionErrors } from '$lib/utils/actions';
+import { parseForm } from '$lib/utils/schema';
 import { fail, redirect } from '@sveltejs/kit';
-import { decode } from '$lib/utils/form';
+import * as v from 'valibot';
 import type { PageServerLoad, Actions } from './$types';
+
+const completeFormSchema = v.object({
+	id: v.string(),
+	date: v.optional(v.string()),
+	notes: v.optional(v.string()),
+	mileage: v.optional(v.string()),
+	cost: v.optional(v.string()),
+});
+import { numberSchema } from '$lib/schemas';
+
+const deferFormSchema = v.object({
+	id: v.optional(numberSchema),
+	months: v.optional(numberSchema),
+	distance: v.optional(numberSchema),
+});
+
+const idOnlySchema = v.object({
+	id: v.optional(numberSchema),
+});
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const vehicle = await getVehicle(params.id!, locals);
@@ -21,7 +41,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		getServiceSchedules(params.id!, locals),
 		getClassifications(params.id!, locals),
 		getVehicleReminders(params.id!, locals),
-		getPresets({ authToken: locals.authToken, webUrl: locals.webUrl, params: { distance_unit: vehicle.distanceUnit } }),
+		getPresets({
+			authToken: locals.authToken,
+			webUrl: locals.webUrl,
+			params: { distance_unit: vehicle.distanceUnit },
+		}),
 	]);
 
 	return { vehicle, schedules, classifications, reminders, presetGroups };
@@ -30,17 +54,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
 	complete: async ({ locals, params, request }) => {
 		const formData = await request.formData();
-		const id = formData.get('id')?.toString() ?? '';
-		const date = formData.get('date')?.toString();
-		const notes = formData.get('notes')?.toString();
-		const mileage = formData.get('mileage')?.toString();
-		const cost = formData.get('cost')?.toString();
+		const parsed = parseForm(formData, completeFormSchema);
+		if (parsed.errors) return fail(422, { errors: parsed.errors });
+
+		const { id, date, notes, mileage, cost } = parsed.data;
 		const files = formData.getAll('record[attachments][]') as File[];
 
-		const body = toMultipartFormData(
-			{ date, notes, mileage: mileage || null, cost: cost || null },
-			{ prefix: 'record' },
-		);
+		const body = toMultipartFormData({ date, notes, mileage, cost }, { prefix: 'record' });
 		for (const file of files) {
 			body.append('record[attachments][]', file);
 		}
@@ -55,61 +75,35 @@ export const actions: Actions = {
 		}
 	},
 
-	delete: async ({ locals, params, request }) => {
-		const id = Number((await request.formData()).get('id'));
-
-		try {
-			await deleteServiceSchedule(params.id!, id, locals);
-			return { success: true };
-		} catch {
-			return fail(422, { error: 'Failed to delete schedule' });
-		}
-	},
-
-	defer: async ({ request, locals, params }) => {
+	defer: withActionErrors(async ({ request, locals, params }) => {
 		const formData = await request.formData();
-		const data = decode(formData, { id: 'number', months: 'number', distance: 'number' });
+		const parsed = parseForm(formData, deferFormSchema);
+		if (parsed.errors) return fail(422, { errors: parsed.errors });
+		if (!parsed.data.id)
+			return fail(422, { errors: [{ id: 'form', title: 'Missing schedule id' }] });
 
-		if (!data.id) return fail(422, { errors: [{ id: 'form', title: 'Missing schedule id' }] });
-
-		try {
-			await deferServiceSchedule(
-				params.id!,
-				data.id,
-				{
-					months: data.months || null,
-					distance: data.distance || null,
-				},
-				locals,
-			);
-		} catch (error) {
-			const message = error instanceof Error ? error.message : 'Failed to defer schedule';
-			return fail(422, { errors: [{ id: 'form', title: message }] });
-		}
-
+		await deferServiceSchedule(
+			params.id!,
+			parsed.data.id,
+			{
+				months: parsed.data.months,
+				distance: parsed.data.distance,
+			},
+			locals,
+		);
 		redirect(303, `/vehicles/${params.id}/tasks`);
-	},
+	}),
 
-	clear_defer: async ({ locals, params, request }) => {
+	clearDefer: withActionErrors(async ({ locals, params, request }) => {
 		const formData = await request.formData();
-		const { id } = decode(formData, { id: 'number' });
-		if (!id) return fail(422, { errors: [{ id: 'form', title: 'Missing schedule id' }] });
+		const parsed = parseForm(formData, idOnlySchema);
+		if (parsed.errors) return fail(422, { errors: parsed.errors });
+		if (!parsed.data.id)
+			return fail(422, { errors: [{ id: 'form', title: 'Missing schedule id' }] });
 
-		try {
-			await clearDeferServiceSchedule(params.id!, id, locals);
-		} catch (error) {
-			const message = error instanceof Error ? error.message : 'Failed to clear defer';
-			return fail(422, { errors: [{ id: 'form', title: message }] });
-		}
-
+		await clearDeferServiceSchedule(params.id!, parsed.data.id, locals);
 		redirect(303, `/vehicles/${params.id}/tasks`);
-	},
-
-	delete_reminder: async ({ locals, params, request }) => {
-		const id = Number((await request.formData()).get('id'));
-		await deleteReminder(params.id!, id, locals);
-		return { success: true };
-	},
+	}),
 
 	suggest: async ({ locals, params, request }) => {
 		const data = await request.formData();
@@ -130,12 +124,10 @@ export const actions: Actions = {
 			await createServiceSchedule(
 				params.id!,
 				{
-					serviceSchedule: {
-						classificationName: preset.name,
-						keywords: preset.keywords,
-						distanceInterval: preset.intervals[distanceUnit] ?? null,
-						monthInterval: preset.intervals['mo'] ?? null,
-					},
+					classificationName: preset.name,
+					keywords: preset.keywords,
+					distanceInterval: preset.intervals[distanceUnit],
+					monthInterval: preset.intervals['mo'],
 				},
 				opts,
 			);
