@@ -6,10 +6,10 @@ Next-generation frontend for Spanner — a vehicle tracking and maintenance appl
 
 - **Framework**: SvelteKit 2 with Svelte 5
 - **Language**: TypeScript 6
-- **Styling**: Custom CSS
+- **Styling**: Tailwind
 - **Auth**: iron-session (cookie-based)
 - **API Client**: Custom fetch wrapper with camelcase/snakecase conversion
-- **Testing**: Vitest with Playwright
+- **Testing**: Vitest
 - **Formatting**: Prettier
 
 ## Prerequisites
@@ -32,12 +32,16 @@ The app runs at `http://localhost:5173` and proxies API requests to `http://loca
 
 ## Environment Variables
 
-Create a `.env` file (or use `.env.development` for defaults):
+Environment variables are declared in [`src/env.ts`](src/env.ts) using SvelteKit's experimental explicit environment variables. Create a `.env` file (or use `.env.development` for defaults):
 
-| Variable        | Purpose                            | Required                               |
-| --------------- | ---------------------------------- | -------------------------------------- |
-| `CLIENT_SECRET` | iron-session cookie encryption key | Yes                                    |
-| `API_URL`       | API backend URL                    | Yes (default: `http://localhost:3001`) |
+| Variable                | Purpose                                                     | Required | Default       |
+| ----------------------- | ----------------------------------------------------------- | -------- | ------------- |
+| `CLIENT_SECRET`         | iron-session cookie encryption key                          | Yes      | —             |
+| `API_URL`               | API backend URL                                             | Yes      | —             |
+| `WEB_URL`               | Public frontend URL for email links                         | No       | `''`          |
+| `USE_SECURE_COOKIE`     | Set to `false` for plain-HTTP local testing                 | No       | `true`        |
+| `PUBLIC_EMAIL_ENABLED`  | Set to `true` if the API has email configured               | No       | `true`        |
+| `PUBLIC_SENTRY_DSN`     | Sentry DSN for error tracking                               | No       | `''`          |
 
 Generate a secret:
 

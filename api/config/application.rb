@@ -29,10 +29,15 @@ module SpannerApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
+    # Rack::Attack for rate limiting auth endpoints
+    config.middleware.use Rack::Attack
+
     config.autoload_paths << Rails.root.join('lib')
     config.autoload_paths << Rails.root.join('app/services/channels')
 
     config.active_job.queue_adapter = :queue_classic
     config.action_mailer.deliver_later_queue_name = 'default'
+
+    config.x.web_url = ENV.fetch('WEB_URL', 'http://localhost:5173')
   end
 end

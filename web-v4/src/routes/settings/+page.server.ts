@@ -1,27 +1,51 @@
-import { env } from '$env/dynamic/private';
+import { WEB_URL } from '$app/env/private';
 import { requestEmailChange, deleteAccount } from '$lib/data/settings';
+import { setPassword } from '$lib/data/session';
+import { getCurrentUser } from '$lib/data/user';
 import { getHTTPErrors } from '$lib/utils/actions';
+import { parseForm, changeEmailSchema, changePasswordSchema } from '$lib/utils/schema';
+import { safeAsync } from '$lib/utils/async';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	return { email: locals.session?.email };
+	const [user] = await safeAsync(getCurrentUser(locals));
+	return {
+		email: locals.session?.email,
+		passwordEnabled: user?.passwordEnabled ?? false,
+	};
 };
 
 export const actions = {
 	changeEmail: async ({ request, locals, url }) => {
 		const formData = await request.formData();
-		const email = formData.get('email') as string;
+		const parsed = parseForm(formData, changeEmailSchema);
 
-		if (!email || email.trim() === '') {
-			return fail(422, { errors: [{ id: 'email', title: "Email can't be blank" }] });
+		if (parsed.errors) {
+			return fail(422, { errors: parsed.errors });
 		}
 
-		const host = env.WEB_URL || url.origin;
+		const host = WEB_URL || url.origin;
 
 		try {
-			await requestEmailChange(email.trim(), host, locals);
-			return { success: true, email: email.trim() };
+			await requestEmailChange(parsed.data.email, host, locals);
+			return { emailSuccess: true, email: parsed.data.email };
+		} catch (error) {
+			return fail(422, getHTTPErrors(error));
+		}
+	},
+
+	changePassword: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const parsed = parseForm(formData, changePasswordSchema);
+
+		if (parsed.errors) {
+			return fail(422, { errors: parsed.errors });
+		}
+
+		try {
+			await setPassword({ password: parsed.data.password }, locals);
+			return { passwordSuccess: true };
 		} catch (error) {
 			return fail(422, getHTTPErrors(error));
 		}

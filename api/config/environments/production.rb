@@ -111,8 +111,6 @@ Rails.application.configure do
   config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE', 'amazon').to_sym
   config.active_storage.service_urls_expire_in = 5.minutes
 
-  config.x.web_url = ENV.fetch('WEB_URL', 'https://spanner.app')
-
   Rails.application.routes.default_url_options[:host] = URI.parse(config.x.web_url).host
   Rails.application.routes.default_url_options[:protocol] =
     config.x.web_url.start_with?('https') ? 'https' : 'http'

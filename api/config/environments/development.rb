@@ -35,6 +35,13 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
+  # Save outgoing emails to tmp/mails so we can inspect them in dev
+  config.action_mailer.delivery_method = :file
+  config.action_mailer.file_settings = { location: Rails.root.join('tmp/mails') }
+
+  # Deliver emails immediately in development (no worker needed)
+  config.active_job.queue_adapter = :inline
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
@@ -57,6 +64,4 @@ Rails.application.configure do
 
   Rails.application.routes.default_url_options[:host] = 'localhost:3001'
   Rails.application.routes.default_url_options[:protocol] = 'http'
-
-  config.x.web_url = ENV.fetch('WEB_URL', 'http://localhost:3001')
 end
