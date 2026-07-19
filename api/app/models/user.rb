@@ -86,8 +86,8 @@ class User < ApplicationRecord
     return nil if token.blank?
 
     user = where(email_confirmation_token: token)
-           .where('email_confirmation_token_valid_until > ?', Time.zone.now)
-           .first
+      .where('email_confirmation_token_valid_until > ?', Time.zone.now)
+      .first
     return nil unless user&.unconfirmed_email
 
     if exists?(email: user.unconfirmed_email)
@@ -112,8 +112,9 @@ class User < ApplicationRecord
   def preferences=(value)
     # Accepts either a UserPreferences object or a hash
     prefs_hash = value.is_a?(UserPreferences) ? value.to_hash : value
-    self[:preferences] = prefs_hash
-    @preferences = UserPreferences.new(prefs_hash)
+    merged = (self[:preferences] || {}).merge(prefs_hash.stringify_keys)
+    self[:preferences] = merged
+    @preferences = UserPreferences.new(merged)
   end
 
   def self.expired_sessions

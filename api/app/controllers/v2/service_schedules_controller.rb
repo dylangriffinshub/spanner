@@ -11,10 +11,15 @@ module V2
     end
 
     def create
-      schedule = schedules.build(schedule_params)
+      classification = find_or_create_classification
+      schedule = schedules.build(schedule_params.merge(classification_id: classification.id))
       schedule.save!
+      begin
+        apply_classification_to_matching_records(schedule.classification)
+      rescue StandardError => e
+        Rails.logger.error("Failed to apply classification to records: #{e.message}")
+      end
       schedule.recalculate_next_due
-      apply_classification_to_matching_records(schedule.classification)
       render json: schedule
     end
 
@@ -71,12 +76,28 @@ module V2
       )
     end
 
+    def find_or_create_classification
+      if params[:service_schedule] && params[:service_schedule][:classification_id].present?
+        vehicle.classifications.find(params[:service_schedule][:classification_id])
+      elsif params[:service_schedule] && params[:service_schedule][:classification_name].present?
+        name = params[:service_schedule][:classification_name]
+        keywords = params.dig(:service_schedule, :keywords).presence || [name.downcase]
+        classification = vehicle.classifications.where(name:).first_or_initialize
+        classification.keywords = keywords
+        classification.save!
+        classification
+      else
+        raise ActionController::ParameterMissing, 'classification_id or classification_name required'
+      end
+    end
+
     def apply_classification_to_matching_records(classification)
+      classifier = HeuristicClassifier.new
       vehicle.records.find_each do |record|
         next if record.notes.blank?
         next if record.classifications.include?(classification)
 
-        HeuristicClassifier.classify(record.notes, vehicle: vehicle).each do |result|
+        classifier.classify(record.notes, vehicle: vehicle).each do |result|
           next unless result[:classification].id == classification.id
 
           record.record_classifications.find_or_create_by(

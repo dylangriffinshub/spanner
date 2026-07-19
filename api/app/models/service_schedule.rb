@@ -82,6 +82,8 @@ class ServiceSchedule < ApplicationRecord
     current_mileage = vehicle.estimated_mileage || last_record&.mileage || 0
     remaining_miles = next_due_mileage - current_mileage
 
+    return Time.zone.today if remaining_miles <= 0
+
     days = (remaining_miles / mpd.to_f).ceil
     Time.zone.today + days.days
   end
@@ -93,6 +95,12 @@ class ServiceSchedule < ApplicationRecord
       notes: notes.presence || classification.name
     )
 
+    record.record_classifications.find_or_create_by!(classification: classification) do |rc|
+      rc.classifier = 'manual'
+      rc.confidence = 1.0
+      rc.auto_tagged = false
+    end
+
     update!(last_completed_record_id: record.id)
     recalculate_next_due
     record
@@ -103,15 +111,16 @@ class ServiceSchedule < ApplicationRecord
   def at_least_one_interval
     return if distance_interval.present? || month_interval.present?
 
-    errors.add(:base, 'at least one of distance_interval or month_interval must be present')
+    errors.add(:distance_interval, :required)
+    errors.add(:month_interval, :required)
   end
 
   def last_matching_record
     vehicle.records
-           .joins(:classifications)
-           .where(classifications: { id: classification_id })
-           .reorder(date: :desc)
-           .first
+      .joins(:classifications)
+      .where(classifications: { id: classification_id })
+      .reorder(date: :desc)
+      .first
   end
 
   def next_mileage(last_record)

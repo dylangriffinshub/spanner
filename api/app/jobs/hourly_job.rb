@@ -54,17 +54,17 @@ class HourlyJob < ApplicationJob
     end
     return if filtered.empty?
 
-    NotificationDispatcher.dispatch(:reminder_today, user: user, reminders: filtered)
+    NotificationDispatcher.new.dispatch(:reminder_today, user: user, reminders: filtered)
     user.record_reminder_sent!
   end
 
   def dispatch_due_schedules(user, date)
     schedules = ServiceSchedule.joins(:vehicle)
-                               .where(vehicles: { user_id: user.id })
-                               .where(next_due_date: date.all_day, enabled: true)
-                               .includes(:vehicle, :classification)
+      .where(vehicles: { user_id: user.id })
+      .where(next_due_date: date.all_day, enabled: true)
+      .includes(:vehicle, :classification)
     return if schedules.empty?
 
-    NotificationDispatcher.dispatch(:schedule_due_today, user: user, schedules: schedules)
+    NotificationDispatcher.new.dispatch(:schedule_due_today, user: user, schedules: schedules)
   end
 end
