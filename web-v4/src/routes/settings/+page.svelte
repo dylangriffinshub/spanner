@@ -2,7 +2,17 @@
 	import { enhance } from '$app/forms';
 	import { umamiEvent } from '$lib/umami';
 	import { ArrowLeft, Check } from 'lucide-svelte';
-	import { Button, Card, Confirm, Field, Input, PageLayout, Alert, InputGroup } from '$lib';
+	import {
+		Button,
+		Card,
+		Confirm,
+		Field,
+		Input,
+		PageLayout,
+		Alert,
+		InputGroup,
+		InputAddon,
+	} from '$lib';
 	import type { PageProps } from './$types';
 	import { pageTitle } from '$lib/utils/site';
 
@@ -123,15 +133,17 @@
 						hint="Receive notifications via webhook (e.g. ntfy.sh)."
 						errors={form?.errors}
 					>
-						<InputGroup
-							name="webhookUrl"
-							type="url"
-							bind:value={webhookUrl}
-							oninput={() => (webhookSuccess = false)}
-							autocomplete="off"
-						>
-							{#snippet end()}
-								{#if webhookUrl}
+						<InputGroup>
+							<Input
+								bind:value={webhookUrl}
+								name="webhookUrl"
+								type="url"
+								oninput={() => (webhookSuccess = false)}
+								autocomplete="off"
+							/>
+
+							{#if webhookUrl}
+								<InputAddon>
 									{#if webhookTestSuccess}
 										<Check size={16} class="text-positive" />
 									{:else}
@@ -140,7 +152,6 @@
 											variant="ghost"
 											color="neutral"
 											size="sm"
-											class="-mr-2"
 											onclick={async (e: Event) => {
 												e.preventDefault();
 												const { testWebhook } = await import('./webhook.remote.ts');
@@ -154,8 +165,8 @@
 											Test
 										</Button>
 									{/if}
-								{/if}
-							{/snippet}
+								</InputAddon>
+							{/if}
 						</InputGroup>
 					</Field>
 				</fieldset>

@@ -2,10 +2,12 @@
 	import * as combobox from '@zag-js/combobox';
 	import { portal, useMachine, normalizeProps } from '@zag-js/svelte';
 	import InputGroup from './InputGroup.svelte';
+	import Input from './Input.svelte';
 	import { Check, ChevronDown } from 'lucide-svelte';
 	import Badge from './Badge.svelte';
 	import Button from './Button.svelte';
 	import type { KeyboardEventHandler } from 'svelte/elements';
+	import { InputAddon } from '$lib';
 
 	interface Props {
 		multiple?: boolean;
@@ -107,38 +109,37 @@
 	});
 </script>
 
-{#snippet start()}
-	<div class="flex gap-1 -ml-1.5">
-		{#each api.selectedItems as item (item.value)}
-			<Badge
-				dismissible
-				size="md"
-				ondismiss={() => {
-					api.setValue(api.value.filter((v) => v !== item.value));
-				}}
-			>
-				{item.label}
-			</Badge>
-		{/each}
-	</div>
-{/snippet}
-
 <div {...api.getRootProps()}>
 	<div {...api.getControlProps()}>
-		<InputGroup
-			{placeholder}
-			{...inputProps}
-			onkeydown={(e) => {
-				api.getInputProps().onkeydown?.(e);
-				onkeydown(e);
-			}}
-			start={api.selectedItems.length ? start : undefined}
-		>
-			{#snippet end()}
-				<Button {...triggerProps} icon class="-mr-2" size="sm" variant="ghost">
+		<InputGroup>
+			{#if api.selectedItems.length}
+				<div class="flex gap-1 px-2">
+					{#each api.selectedItems as item (item.value)}
+						<Badge
+							dismissible
+							size="md"
+							ondismiss={() => {
+								api.setValue(api.value.filter((v) => v !== item.value));
+							}}
+						>
+							{item.label}
+						</Badge>
+					{/each}
+				</div>
+			{/if}
+			<Input
+				{...inputProps}
+				{placeholder}
+				onkeydown={(e) => {
+					api.getInputProps().onkeydown?.(e);
+					onkeydown(e);
+				}}
+			/>
+			<InputAddon>
+				<Button {...triggerProps} icon size="sm" color="neutral" variant="ghost">
 					<ChevronDown size={18} />
 				</Button>
-			{/snippet}
+			</InputAddon>
 		</InputGroup>
 	</div>
 </div>

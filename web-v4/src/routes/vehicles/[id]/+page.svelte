@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib';
 	import { umamiEvent } from '$lib/umami';
+	import Input from '$lib/components/common/Input.svelte';
 	import InputGroup from '$lib/components/common/InputGroup.svelte';
 	import VehiclePageLayout from '$lib/components/vehicles/VehiclePageLayout.svelte';
 	import Stat from '$lib/components/common/Stat.svelte';
@@ -12,79 +13,25 @@
 	import NextOverdueTask from '$lib/components/vehicles/NextOverdueTask.svelte';
 	import type { PageProps } from './$types';
 	import { pageTitle } from '$lib/utils/site';
-	import Fuse from 'fuse.js';
+	import { createHistorySearch } from '$lib/utils/historySearch.svelte';
 
 	let { data }: PageProps = $props();
 
 	let vehicle = $derived(data.vehicle);
 	let history = $derived(data.history);
 
-	let searchQuery = $state('');
+	const historySearch = createHistorySearch(() => history);
+
+	let searchInputEl: HTMLInputElement | undefined = $state();
+
+	function applyClassificationFilter(name: string) {
+		historySearch.query = name;
+		searchInputEl?.focus();
+		searchInputEl?.scrollIntoView({ block: 'center' });
+	}
 
 	let activeTab = $derived(
 		$page.url.pathname === `/vehicles/${vehicle.id}` ? 'history' : 'history',
-	);
-
-	let fuse = $derived(
-		new Fuse(history, {
-			useTokenSearch: true,
-			tokenMatch: 'all',
-			keys: [
-				'notes',
-				'cost',
-				{
-					name: 'mileage',
-					getFn: (item) => {
-						const m = item.mileage;
-						if (m == null) return '';
-						const s = m.toString();
-
-						const rounded1k = Math.round(m / 1000) * 1000;
-						const rounded5k = Math.round(m / 5000) * 5000;
-						const floor10k = Math.floor(m / 10_000) * 10000;
-
-						const abbrevRounded = Math.round(rounded5k / 1000) + 'k';
-						const abbrevFloor = Math.round(floor10k / 1000) + 'k';
-
-						const result = [
-							s,
-							m.toLocaleString(),
-							abbrevRounded,
-							abbrevFloor,
-							rounded1k.toString(),
-							rounded5k.toString(),
-							floor10k.toString(),
-						];
-
-						console.log(result);
-						return result;
-					},
-				},
-				{
-					name: 'date',
-					getFn: (item) => {
-						try {
-							const d = new Date(item.date);
-							return [
-								item.date.slice(0, 10),
-								d.getFullYear().toString(),
-								d.toLocaleDateString('en-US', { month: 'long' }),
-								d.toLocaleDateString('en-US', { month: 'short' }),
-							];
-						} catch {
-							return item.date;
-						}
-					},
-				},
-			],
-			threshold: 0.3,
-			minMatchCharLength: 2,
-			ignoreLocation: true,
-		}),
-	);
-
-	let filteredHistory = $derived(
-		searchQuery ? fuse.search(searchQuery).map((r) => r.item) : history,
 	);
 </script>
 
@@ -142,26 +89,26 @@
 			</EmptyState>
 		{:else}
 			<div class="flex justify-between gap-10 mb-4">
-				<InputGroup
-					type="search"
-					name="search"
-					placeholder="Search history"
-					variant="filled"
-					class="w-full sm:w-1/2 lg:w-1/3"
-					bind:value={searchQuery}
-				>
-					{#snippet start()}<Search size={16} />{/snippet}
-					{#snippet end()}
-						{#if searchQuery}
-							<button
-								type="button"
-								onclick={() => (searchQuery = '')}
-								class="flex rounded-xs items-center text-ink-500 hover:text-ink-800 p-3 -mx-3"
-							>
-								<X size={16} />
-							</button>
-						{/if}
-					{/snippet}
+				<InputGroup variant="filled" class="w-full sm:w-1/2 lg:w-1/3">
+					<span class="p-3 text-sm text-ink-500">
+						<Search size={16} />
+					</span>
+					<Input
+						bind:value={historySearch.query}
+						bind:ref={searchInputEl}
+						type="search"
+						name="search"
+						placeholder="Search history"
+					/>
+					{#if historySearch.query}
+						<button
+							type="button"
+							onclick={() => (historySearch.query = '')}
+							class="flex rounded-xs items-center text-ink-500 hover:text-ink-800 p-3"
+						>
+							<X size={16} />
+						</button>
+					{/if}
 				</InputGroup>
 				{#if !vehicle.retired}
 					<Button href="/vehicles/{vehicle.id}/add" {...umamiEvent('add_record')}>
@@ -171,13 +118,14 @@
 				{/if}
 			</div>
 
-			{#if !filteredHistory.length && searchQuery.length >= 2}
-				<p class="text-center text-ink-400 py-12">No results for "{searchQuery}"</p>
+			{#if !historySearch.filtered.length && historySearch.query.length >= historySearch.minQueryLength}
+				<p class="text-center text-ink-400 py-12">No results for "{historySearch.query}"</p>
 			{:else}
 				<HistoryTable
-					history={searchQuery.length < 2 ? history : filteredHistory}
+					history={historySearch.filtered}
 					{vehicle}
 					editable={!vehicle.retired}
+					onClassificationClick={applyClassificationFilter}
 				/>
 			{/if}
 		{/if}

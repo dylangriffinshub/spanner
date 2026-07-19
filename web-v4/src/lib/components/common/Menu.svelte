@@ -2,11 +2,11 @@
 	import * as menu from '@zag-js/menu';
 	import { useMachine, normalizeProps } from '@zag-js/svelte';
 	import Button from './Button.svelte';
-	import type { ButtonSize } from './Button.svelte';
-	import { ChevronDown } from 'lucide-svelte';
+	import type { ButtonSize, ButtonColor } from './Button.svelte';
 	import MenuContent from './MenuContent.svelte';
 	import type { ClassValue } from 'svelte/elements';
 	import type { Snippet } from 'svelte';
+	import { ChevronDown } from 'lucide-svelte';
 
 	export type Item = {
 		value: string;
@@ -27,16 +27,20 @@
 	};
 
 	interface Props {
-		trigger: string | Snippet;
+		children?: Snippet;
 		start?: Snippet;
 		end?: Snippet;
+		positioning?: menu.PositioningOptions;
+		showIndicator?: boolean;
 		items?: Item[];
 		optionItems?: OptionItem[];
 		theme?: 'light' | 'dark';
 		variant?: 'solid' | 'outline' | 'ghost';
-		color?: 'brand' | 'neutral';
+		color?: ButtonColor;
+		icon?: boolean;
 		size?: ButtonSize;
 		class?: ClassValue;
+		disabled?: boolean | null;
 		onSelect?: (details: { value: string }) => void;
 		id?: string;
 		itemEnd?: Snippet<[Item]>;
@@ -45,16 +49,20 @@
 	const defaultId = $props.id();
 
 	let {
-		trigger,
+		children,
 		start,
 		end,
 		items = [],
 		optionItems = [],
 		theme,
 		variant = 'ghost',
+		positioning,
+		showIndicator = true,
+		icon,
 		color,
 		size,
 		class: className,
+		disabled,
 		id = defaultId,
 		onSelect,
 		itemEnd,
@@ -63,6 +71,7 @@
 	const service = useMachine(menu.machine, {
 		id,
 		onSelect,
+		positioning,
 		defaultHighlightedValue: items[0]?.value,
 	});
 	const api = $derived(menu.connect(service, normalizeProps));
@@ -87,23 +96,21 @@
 	});
 </script>
 
-<div class="relative leading-none" data-theme={theme}>
-	<Button
-		{...triggerProps}
-		active={api.open}
-		data-theme={theme}
-		{variant}
-		{color}
-		{size}
-		class={className}
-	>
-		{#if typeof trigger === 'function'}
-			{@render trigger()}
-		{:else}
-			{trigger}
-		{/if}
+<Button
+	{...triggerProps}
+	active={api.open}
+	data-theme={theme}
+	{icon}
+	{variant}
+	{color}
+	{size}
+	{disabled}
+	class={className}
+>
+	{@render children?.()}
+	{#if showIndicator}
 		<span {...api.getIndicatorProps()}><ChevronDown size={16} /></span>
-	</Button>
+	{/if}
+</Button>
 
-	<MenuContent {api} {items} {optionItems} {start} {end} {itemEnd} />
-</div>
+<MenuContent {api} {items} {optionItems} {start} {end} {itemEnd} />
