@@ -1,20 +1,30 @@
 import { useState } from 'react';
 
-export default function useFormData<T>(initialData: T) {
+export default function useFormData<T>(initialData: T, transformValue?: (fieldName: string, fieldValue: string) => string) {
     const [formData, setFormData] = useState(initialData);
 
-    const handleInputChange = ({ target }) => {
+    const getInputValue = ({ target }) => {
+        return target.type === 'checkbox' ? target.checked : target.value;
+    };
+
+    const handleFieldChange = (name: string, value: string) => {
         setFormData({
             ...formData,
-            [target.name]: target.value,
+            [name]: transformValue?.(name, value) ?? value,
         });
     };
 
-    const getFormFieldProps = (name) => ({
-        name,
-        value: formData[name],
-        onChange: handleInputChange,
-    });
+    const getFormFieldProps = (name: string, handleGetValue = getInputValue) => {
+        const valueField = typeof formData[name] === 'boolean' ? 'isChecked' : 'value';
+
+        return {
+            name,
+            [valueField]: formData[name],
+            onChange: (v) => {
+                handleFieldChange(name, handleGetValue(v));
+            },
+        };
+    };
 
     const setFormField = (name: string, value: any) => {
         setFormData({
@@ -24,7 +34,6 @@ export default function useFormData<T>(initialData: T) {
     };
 
     return {
-        handleInputChange,
         getFormFieldProps,
         setFormField,
         setFormData,

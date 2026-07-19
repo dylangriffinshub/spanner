@@ -1,7 +1,9 @@
 import {
-    Box, Flex, Skeleton, Table, Tbody, Td, Text, Th, Thead, Tr,
+    Box,
+    Flex, Heading, Skeleton, SkeletonText, Text,
 } from '@chakra-ui/react';
 import { intlFormat } from 'date-fns';
+import { groupBy } from 'lodash';
 import { VehicleRecord } from 'queries/records';
 import React from 'react';
 import { parseDateISO } from 'utils/date';
@@ -15,17 +17,9 @@ export interface VehicleRecordsTableProps {
     isLoaded?: boolean;
 }
 
-const getNextRecordWithMileage = (currentIdx: number, arr: VehicleRecord[]): VehicleRecord | undefined => {
-    let found: VehicleRecord | undefined;
-    // eslint-disable-next-line no-plusplus
-    for (let i = currentIdx + 1; i < arr.length; i++) {
-        const record = arr[i];
-        if (record.mileage) {
-            found = record;
-            break;
-        }
-    }
-    return found;
+const getNextRecordWithMileage = (record: VehicleRecord, arr: VehicleRecord[]): VehicleRecord | undefined => {
+    const idx = arr.findIndex((r) => r.id === record.id);
+    return arr[idx + 1];
 };
 
 const getDeltaMileage = (record: VehicleRecord, olderRecord: VehicleRecord): number | undefined => {
@@ -50,6 +44,8 @@ const Cell = (props) => (
         px={[0, null, 4]}
         py={[0, null, 2]}
         display={['flex', null, 'table-cell']}
+        verticalAlign="top"
+        alignItems="flex-start"
         {...props}
     />
 );
@@ -60,96 +56,118 @@ const FlexTable = (props) => (
         direction="column"
         flexFlow="column nowrap"
         display={['flex', null, 'table']}
-        __css={{ 'border-collapse': 'collapse' }}
+        sx={{ borderCollapse: 'collapse' }}
         {...props}
     />
 );
 
 export const VehicleRecordsTable: React.FC<VehicleRecordsTableProps> = ({ records, enableCost = false, distanceUnit = 'mi' }) => {
     const reverseChronoRecords = sortRecordsNewestFirst(records ?? []);
+    const recordsByYear = groupBy(reverseChronoRecords, (r) => new Date(r.date).getFullYear());
 
-    const basis = {
-        date: 120,
-        cost: 100,
-        mileage: 120,
-    };
-
-    return (
-        <FlexTable>
-            <Row
-                fontWeight="bold"
-                display={['none', null, 'table-row']}
-                borderBottomWidth="2px"
-            >
-                <Cell basis={basis.date}>Date</Cell>
-                {enableCost && <Cell basis={basis.cost}>Cost</Cell>}
-                <Cell basis={basis.mileage}>Mileage</Cell>
-                <Cell>Notes</Cell>
-            </Row>
-
-            {!records && [1, 2, 3, 4].map((n) => (
-                <Row key={n} data-testid={`skeleton${n}`}>
-                    <Cell w={basis.date}>
-                        <Skeleton h={2} />
-                    </Cell>
-                    <Cell w={basis.mileage}>
-                        <Skeleton h={2} />
-                    </Cell>
-                    <Cell maxW={300}>
-                        <Skeleton h={2} />
-                    </Cell>
-                </Row>
-            ))}
-
-            {reverseChronoRecords.map((record, i, arr) => {
-                const nextRecord = getNextRecordWithMileage(i, arr);
-                const deltaMileage = nextRecord ? getDeltaMileage(record, nextRecord) : undefined;
-
-                return (
-                    <Row borderBottomWidth={i < arr.length - 1 ? '1px' : 'none'}>
-                        <Cell
-                            whiteSpace="nowrap"
-                            basis={basis.date}
-                            fontWeight={['bold', 'bold', 'inherit']}
-                            fontSize={['sm', null, 'md']}
-                        >
-                            {intlFormat(parseDateISO(record.date), { month: 'short', year: 'numeric', day: 'numeric' })}
+    if (!records) {
+        return (
+            <FlexTable>
+                {[1, 2, 3].map((n) => (
+                    <Row key={n} data-testid={`skeleton${n}`}>
+                        <Cell mr={[3, null, 'auto']}>
+                            <Skeleton h={2} w={100} />
                         </Cell>
-
-                        {enableCost && (
-                            <Cell
-                                whiteSpace="nowrap"
-                                basis={basis.cost}
-                                fontSize={['sm', null, 'md']}
-                            >
-                                {record.cost ? formatCurrency(Number(record.cost)) : '--'}
-                            </Cell>
-                        )}
-
-                        <Cell
-                            whiteSpace="nowrap"
-                            alignItems="center"
-                            textAlign="right"
-                            basis={basis.mileage}
-                            fontSize={['sm', null, 'md']}
-                        >
-                            {Boolean(Number(record.mileage)) && formatMileage(record.mileage, distanceUnit)}
-                            {deltaMileage !== undefined && (
-                                <Text fontSize="xs" color="gray" ml={1}>
-                                    (+
-                                    {deltaMileage}
-                                    )
-                                </Text>
-                            )}
+                        <Cell flex={[1, null, 'auto']}>
+                            <Skeleton h={2} w={100} />
                         </Cell>
-
-                        <Cell basis={['100%', null]} flex={[null, null, 1]} w="100%">
-                            {record.notes}
+                        <Cell pt={[2]} basis={['100%', null]} w="100%">
+                            <SkeletonText noOfLines={2} flex={1} />
                         </Cell>
                     </Row>
+                ))}
+            </FlexTable>
+        );
+    }
+
+    return (
+        <>
+            {Object.keys(recordsByYear).sort((a, b) => Number(b) - Number(a)).map((year) => {
+                const yearRecords = recordsByYear[year];
+
+                return (
+                    <Box key={year}>
+                        <Heading
+                            size="md"
+                            px={[0, null, 4]}
+                            pb={2}
+                            borderBottomColor="gray.300"
+                            borderBottomWidth="1px"
+                        >
+                            {year}
+                        </Heading>
+                        <FlexTable mb={8}>
+                            <Row
+                                fontWeight="bold"
+                                fontSize="sm"
+                                color="gray.600"
+                                borderBottomColor="gray.300"
+                                display={['none', null, 'table-row']}
+                            >
+                                <Cell>Date</Cell>
+                                <Cell>Mileage</Cell>
+                                {enableCost && <Cell>Cost</Cell>}
+                                <Cell>Notes</Cell>
+                            </Row>
+
+                            {yearRecords.map((record, i) => {
+                                const nextRecord = getNextRecordWithMileage(record, reverseChronoRecords);
+                                const deltaMileage = nextRecord ? getDeltaMileage(record, nextRecord) : undefined;
+
+                                return (
+                                    <Row key={record.id} bg={i % 2 ? 'gray.50' : 'white'}>
+                                        <Cell
+                                            whiteSpace="nowrap"
+                                            fontWeight={['bold', null, 'inherit']}
+                                            fontSize={['sm', null, 'md']}
+                                            mr={[3, null, 'auto']}
+                                        >
+                                            {intlFormat(parseDateISO(record.date), { month: 'short', day: 'numeric' })}
+                                        </Cell>
+
+                                        <Cell
+                                            whiteSpace="nowrap"
+                                            alignItems="center"
+                                            textAlign={['left', null, 'right']}
+                                            flex={[1, null, 'auto']}
+                                            fontSize={['sm', null, 'md']}
+                                        >
+                                            {Boolean(Number(record.mileage)) && formatMileage(record.mileage, distanceUnit)}
+                                            {deltaMileage !== undefined && (
+                                                <Text fontSize="xs" color="gray" ml={1}>
+                                                    (+
+                                                    {deltaMileage}
+                                                    )
+                                                </Text>
+                                            )}
+                                        </Cell>
+
+                                        {enableCost && (
+                                            <Cell
+                                                whiteSpace="nowrap"
+                                                fontSize={['sm', null, 'md']}
+                                                textAlign="right"
+                                            >
+                                                {record.cost ? formatCurrency(Number(record.cost)) : '--'}
+                                            </Cell>
+                                        )}
+
+                                        <Cell basis={['100%', null]} w="100%">
+                                            {record.notes}
+                                        </Cell>
+                                    </Row>
+                                );
+                            })}
+                        </FlexTable>
+                    </Box>
                 );
             })}
-        </FlexTable>
+        </>
     );
 };
 
