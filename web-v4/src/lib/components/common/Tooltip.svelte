@@ -22,6 +22,7 @@
 		closeDelay?: number;
 		disabled?: boolean;
 		interactive?: boolean;
+		closeOnClick?: boolean;
 		id?: string;
 	}
 
@@ -33,6 +34,7 @@
 		closeDelay = 0,
 		disabled,
 		interactive,
+		closeOnClick,
 		id: idProp,
 	}: Props = $props();
 
@@ -45,15 +47,15 @@
 		closeDelay,
 		disabled,
 		interactive,
+		closeOnClick,
 		positioning: { placement },
 	});
 
 	const api = $derived(tooltip.connect(service, normalizeProps));
 </script>
 
-<div>
-	{@render children(api.getTriggerProps() as Record<string, unknown>)}
-</div>
+{@render children(api.getTriggerProps() as Record<string, unknown>)}
+
 {#if api.open}
 	<div {...api.getPositionerProps()}>
 		<div

@@ -3,6 +3,7 @@
 	import SigninForm from '$lib/components/forms/SigninForm.svelte';
 	import type { PageProps } from './$types';
 	import { pageTitle } from '$lib/utils/site';
+	import AppIcon from '$lib/components/common/AppIcon.svelte';
 
 	let { form }: PageProps = $props();
 </script>
@@ -11,11 +12,10 @@
 	<title>{pageTitle()}</title>
 </svelte:head>
 
-<main class="max-w-2xl w-full mx-auto px-4">
+<main class="max-w-md w-full mx-auto px-4">
 	<div class="flex min-h-screen flex-col items-center">
 		<div class="flex flex-1 flex-col items-center justify-center my-4">
-			<img src="/logo.png" alt="Spanner" class="h-14 w-auto block dark:hidden" />
-			<img src="/logo-white.png" alt="Spanner" class="hidden dark:block h-14 w-auto" />
+			<AppIcon />
 		</div>
 		<div class="flex flex-3 mb-6 flex-col items-center">
 			<Card size="lg">

@@ -33,10 +33,12 @@
 	<div class="max-w-2xl mx-auto">
 		{#if reminders.length}
 			<header class="flex items-center gap-2 mb-6">
-				<Button href={`/vehicles/${vehicle.id}/add?view=reminder`} class="ml-auto">
-					<PlusIcon size={16} />
-					Add Reminder
-				</Button>
+				{#if !vehicle.retired}
+					<Button href={`/vehicles/${vehicle.id}/add?view=reminder`} class="ml-auto">
+						<PlusIcon size={16} />
+						Add Reminder
+					</Button>
+				{/if}
 			</header>
 			<ul class="space-y-3">
 				{#each sortedReminders as reminder (reminder.id)}
@@ -100,6 +102,7 @@
 									<RecordForm
 										{vehicle}
 										record={{ notes: reminder.notes, mileage: vehicle.estimatedMileage } as any}
+										action={`/vehicles/${vehicle.id}/add?/record&reminder_id=${reminder.id}`}
 									/>
 								</div>
 							{/if}
@@ -115,9 +118,11 @@
 				{#snippet media()}
 					<Bell size={48} class="text-ink-300" />
 				{/snippet}
-				{#snippet action()}
-					<Button href={`/vehicles/${vehicle.id}/add?view=reminder`}>Add Reminder</Button>
-				{/snippet}
+				{#if !vehicle.retired}
+					{#snippet action()}
+						<Button href={`/vehicles/${vehicle.id}/add?view=reminder`}>Add Reminder</Button>
+					{/snippet}
+				{/if}
 			</EmptyState>
 		{/if}
 	</div>
