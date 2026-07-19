@@ -11,8 +11,9 @@ import useTextareaResize from 'hooks/useTextareaResize';
 import { useRouter } from 'next/router';
 import * as records from 'queries/records';
 import { Vehicle } from 'queries/vehicles';
-import React, { useEffect } from 'react';
-import { formatDateISO, parseDateISO } from 'utils/date';
+import React from 'react';
+import { formatDateISO, parseDateUTC } from 'utils/date';
+import { mileageFieldHelpers, costFieldHelpers } from 'utils/form';
 import { getCurrencySymbol } from 'utils/number';
 
 export interface NewServiceFormProps {
@@ -24,26 +25,12 @@ export const NewServiceForm: React.FC<NewServiceFormProps> = ({ vehicle, record 
     const router = useRouter();
     const textareaRef = useTextareaResize();
 
-    const {
-        formData, getFormFieldProps, setFormData, setFormField,
-    } = useFormData({
-        date: new Date().toISOString(),
-        notes: '',
+    const { formData, getFormFieldProps } = useFormData({
+        date: formatDateISO(new Date()),
         mileage: vehicle.estimatedMileage,
+        notes: '',
         cost: '',
         ...record,
-    }, (fieldName, fieldValue) => {
-        if (fieldName === 'mileage') {
-            return fieldValue.replace(/\D/g, '');
-        }
-        if (fieldName === 'cost') {
-            return fieldValue.replace(/\D/g, '');
-        }
-        return fieldValue;
-    });
-
-    useEffect(() => {
-        if (record) setFormData({ ...record });
     }, [record]);
 
     const { mutate: createOrUpdateRecord, isProcessing, error } = useMutation(records.createOrUpdateRecord, {
@@ -86,7 +73,7 @@ export const NewServiceForm: React.FC<NewServiceFormProps> = ({ vehicle, record 
                             <FormLabel>Date</FormLabel>
 
                             <Input type="hidden" {...getFormFieldProps('date')} />
-                            <DatePicker onChange={(date) => setFormField('date', date)} initialDate={parseDateISO(formData.date)} />
+                            <DatePicker initialDate={parseDateUTC(formData.date)} />
                         </FormControl>
                     </Box>
                     <Box flex={1}>
@@ -97,7 +84,7 @@ export const NewServiceForm: React.FC<NewServiceFormProps> = ({ vehicle, record 
                         <FormControl mb={4} id="mileage" isRequired>
                             <FormLabel>Mileage</FormLabel>
                             <InputGroup size="md">
-                                <Input {...getFormFieldProps('mileage')} />
+                                <Input {...getFormFieldProps('mileage', mileageFieldHelpers)} />
                                 <InputRightAddon>{vehicle.distanceUnit}</InputRightAddon>
                             </InputGroup>
                         </FormControl>
@@ -105,7 +92,7 @@ export const NewServiceForm: React.FC<NewServiceFormProps> = ({ vehicle, record 
                             <FormLabel>Cost</FormLabel>
                             <InputGroup size="md">
                                 <InputLeftAddon>{getCurrencySymbol()}</InputLeftAddon>
-                                <Input {...getFormFieldProps('cost')} />
+                                <Input {...getFormFieldProps('cost', costFieldHelpers)} />
                             </InputGroup>
                         </FormControl>
                     </Box>

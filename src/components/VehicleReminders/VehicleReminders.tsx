@@ -1,12 +1,12 @@
 import { AddIcon } from '@chakra-ui/icons';
 import {
-    Button, Container, Flex, Text,
+    Button, Container, Flex, Heading, Text,
 } from '@chakra-ui/react';
 import useRequest from 'hooks/useRequest';
 import Link from 'next/link';
 import { Vehicle, vehiclePath } from 'queries/vehicles';
 import React from 'react';
-import { intlFormatDateISO } from 'utils/date';
+import { intlFormatDateUTC } from 'utils/date';
 import { isReminderOverdue } from 'utils/reminders';
 import { formatMileage } from 'utils/vehicle';
 
@@ -42,11 +42,22 @@ export const VehicleReminders: React.FC<VehicleRemindersProps> = ({ vehicleId })
                             )}
                         </Flex>
                         <Text color={isReminderOverdue(reminder) ? 'red.500' : 'black'}>
-                            {reminder.date ? intlFormatDateISO(reminder.date) : null}
+                            {reminder.reminderDate ? intlFormatDateUTC(reminder.reminderDate) : null}
                         </Text>
                     </Flex>
                 );
             }))}
+
+            {Boolean(!vehicle?.reminders.length) && (
+                <>
+                    <Heading>
+                        No reminders yet
+                    </Heading>
+                    <Text>
+                        Use reminders to get notified of things on a date or mileage
+                    </Text>
+                </>
+            )}
         </Container>
     );
 };
