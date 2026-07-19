@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Track your vehicle service easily",
   "scripts": {
+    "start": "gulp",
     "setup": "npm install && bower install",
     "deploy": "./deploy.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,7 +26,7 @@
     "gulp-webserver": "^0.8.7"
   },
   "dependencies": {
-    "backbone": "^1.1.2",
+    "backbone": "~1.1.2",
     "backbone.localstorage": "^1.1.14",
     "body-parser": "^1.9.3",
     "emailjs": "^0.3.12",
@@ -36,7 +37,7 @@
     "lodash": "^2.4.1",
     "marked": "^0.3.2",
     "moment": "^2.8.4",
-    "mongoose": "^3.8.19",
+    "mongoose": "^4.0.2",
     "node-jquery-param": "0.0.2",
     "numeral": "^1.5.3",
     "papaparse": "^4.0.5",

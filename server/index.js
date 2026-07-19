@@ -12,9 +12,11 @@ var vehicleRoutes = require('./app/routes/vehicle');
 var sessionRoutes = require('./app/routes/session');
 var app           = express();
 
-var mongoDbPath = process.env.MONGOLAB_URI || 'mongodb://localhost/service-records';
+var MONGO_URL = process.env.MONGO_URL || process.env.MONGOHQ_URL;
+var mongoDbPath = MONGO_URL || 'mongodb://localhost/service-records';
 mongoose.connect(mongoDbPath);
 
+var ONE_YEAR = 31557600000;
 var host = process.env.DELIVERY_HOST || 'localhost:8080';
 
 passwordless.init(new MongoStore(mongoDbPath), {
@@ -24,7 +26,7 @@ passwordless.addDelivery(
   function(tokenToSend, uidToSend, recipient, callback) {
     postmark.send({
       "TextBody": 'Hello '+ recipient +'!\nYou can now access your vehicles here: ' +
-        'http://' + host + '/#login/' +
+        'https://' + host + '/#login/' +
         encodeURIComponent(uidToSend) + '/' +
         tokenToSend,
       "From": 'spanner@nicinabox.com',
@@ -46,8 +48,7 @@ app.use(expressSession({
   resave: false
 }));
 
-var oneYear = 31557600000;
-app.use(express.static('public', { maxAge: oneYear }));
+app.use(express.static('public', { maxAge: ONE_YEAR }));
 
 // Passwordless middleware
 app.use(passwordless.acceptToken());
