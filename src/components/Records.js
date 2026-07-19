@@ -21,7 +21,10 @@ export class Records extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    let records = nextProps.state.records.filter(r => r.notes.includes(nextProps.search))
+    let records = nextProps.state.records.filter(r => {
+      let re = new RegExp(nextProps.search, 'i')
+      return re.test(r.notes)
+    })
 
     this.setState({
       years: this.getSections(records),
@@ -103,7 +106,9 @@ export class Records extends Component {
                       return (
                         <tr className="record" key={i} onClick={(e) => this.handleShowEdit(e, record)}>
                           <td className="date">{formatDate(record.date, 'MMM DD')}</td>
-                          <td className="mileage">{record.mileage.toLocaleString()}</td>
+                          {record.mileage ? (
+                            <td className="mileage">{record.mileage.toLocaleString()}</td>
+                          ) : <td />}
 
                           {this.props.state.vehicle.enableCost && (
                             <td className="cost">{record.cost}</td>

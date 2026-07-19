@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "deploy": "./deploy.sh",
-    "start": "node server"
+    "start": "node server",
+    "build": "NODE_ENV=production webpack -p"
   },
   "author": "Nic Aitch",
   "devDependencies": {
@@ -16,6 +17,7 @@
     "babel-preset-stage-2": "^6.18.0",
     "css-loader": "^0.26.1",
     "file-loader": "^0.9.0",
+    "lodash-webpack-plugin": "^0.10.7",
     "node-sass": "^4.1.1",
     "react-scripts": "0.8.4",
     "sass-loader": "^4.1.1",
@@ -30,13 +32,16 @@
     "element-class": "^0.2.2",
     "express": "^4.14.0",
     "http-proxy": "^1.16.2",
+    "http-proxy-middleware": "^0.17.3",
     "marked": "^0.3.6",
     "react": "^15.4.1",
+    "react-day-picker": "^3.1.1",
     "react-dom": "^15.4.1",
     "react-redux": "^5.0.1",
     "react-textarea-autosize": "^4.0.5",
     "redux": "^3.6.0",
     "redux-thunk": "^2.1.0",
-    "url-pattern": "^1.0.3"
+    "url-pattern": "^1.0.3",
+    "whatwg-fetch": "^2.0.1"
   }
 }
