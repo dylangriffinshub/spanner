@@ -12,6 +12,7 @@
 	let newEmail = $derived(form?.email ?? '');
 	let webhookSuccess = $derived(form?.webhookSuccess);
 	let webhookTestSuccess = $state(false);
+	// svelte-ignore state_referenced_locally
 	let webhookUrl = $state(data.webhookUrl);
 </script>
 
@@ -44,7 +45,7 @@
 				</Alert>
 			{/if}
 			<form method="post" action="?/changeEmail" use:enhance>
-				<fieldset class="fieldset">
+				<fieldset>
 					<Field
 						name="email"
 						label="New email"
@@ -79,7 +80,7 @@
 				</Alert>
 			{/if}
 			<form method="post" action="?/changePassword" use:enhance>
-				<fieldset class="fieldset">
+				<fieldset>
 					<Field
 						name="password"
 						label={data.passwordEnabled ? 'New password' : 'Password'}
@@ -115,7 +116,7 @@
 						}
 					}}
 			>
-				<fieldset class="fieldset">
+				<fieldset>
 					<Field
 						name="webhookUrl"
 						label="Webhook URL"

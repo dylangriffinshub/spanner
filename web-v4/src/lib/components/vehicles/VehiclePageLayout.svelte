@@ -6,14 +6,16 @@
 	import VehicleColorIndicator from '$lib/components/vehicles/VehicleColorIndicator.svelte';
 	import type { Vehicle } from '$lib/data/vehicles';
 	import { getOverdueRemindersCount } from '$lib/utils/reminders';
+	import { getOverdueSchedulesCount } from '$lib/utils/tasks';
 	import { enhance } from '$app/forms';
-	import { ArrowLeft, Bell, BookOpenText, Check, FileText, Wrench } from 'lucide-svelte';
+	import { ArrowLeft, BookOpenText, Check, FileText, Wrench } from 'lucide-svelte';
 	import type { Snippet } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { tick } from 'svelte';
 	import Badge from '../common/Badge.svelte';
 	import { vehiclePath } from '$lib/routes';
 	import { enhanceInline } from '$lib/utils/form';
+	import { page } from '$app/state';
 
 	interface Props {
 		vehicle: Vehicle;
@@ -40,7 +42,7 @@
 		tabs: customTabs,
 	}: Props = $props();
 
-	const isSmallScreen = new MediaQuery('(max-width: 640px');
+	const isSmallScreen = new MediaQuery('(max-width: 640px', page.data.isMobile);
 
 	let shareOpen = $state(false);
 
@@ -52,18 +54,24 @@
 		badge?: { count: number; icon: any };
 	};
 
+	const overdueCount = $derived.by(() => {
+		const reminders = getOverdueRemindersCount(vehicle);
+		const schedules = getOverdueSchedulesCount(vehicle);
+		if (reminders === undefined && schedules === undefined) return undefined;
+		return (reminders ?? 0) + (schedules ?? 0);
+	});
+
 	const tabs = $derived(
 		(customTabs ?? [
 			{ value: 'history', label: 'History', href: `/vehicles/${vehicle.id}`, icon: BookOpenText },
 			{
-				value: 'reminders',
-				label: 'Reminders',
-				href: `/vehicles/${vehicle.id}/reminders`,
+				value: 'tasks',
+				label: 'Tasks',
+				href: `/vehicles/${vehicle.id}/tasks`,
+				icon: Wrench,
 				badge: {
-					count: getOverdueRemindersCount(vehicle),
-					icon: Wrench,
+					count: overdueCount,
 				},
-				icon: Bell,
 			},
 			{ value: 'notes', label: 'Notes', href: `/vehicles/${vehicle.id}/notes`, icon: FileText },
 		]) as Tab[],
@@ -152,6 +160,7 @@
 					pill
 					size="sm"
 					aria-current={active ? 'page' : undefined}
+					class="aria-current-page:text-white"
 				>
 					<tab.icon size={14} />
 					{tab.label}

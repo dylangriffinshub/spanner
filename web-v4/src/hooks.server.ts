@@ -1,8 +1,17 @@
 import { sequence } from '@sveltejs/kit/hooks';
 import * as Sentry from '@sentry/sveltekit';
+import { PUBLIC_SENTRY_DSN } from '$app/env/public';
+import { isMobileUserAgent } from '$lib/utils/device';
 import { getSession, setSession, clearSession } from '$lib/utils/session';
 import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { HTTPError } from '$lib/data/client';
+
+if (PUBLIC_SENTRY_DSN) {
+	Sentry.init({
+		dsn: PUBLIC_SENTRY_DSN,
+		tracesSampleRate: 1.0,
+	});
+}
 
 const protectedRoutes = ['^/vehicles', '^/settings'];
 
@@ -27,6 +36,7 @@ export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, re
 	event.locals.session = session;
 	event.locals.webUrl = event.url.origin;
 	event.locals.authToken = session?.authToken;
+	event.locals.isMobile = isMobileUserAgent(event.request.headers.get('user-agent') ?? '');
 
 	const prefsCookie = event.cookies.get('prefs');
 	const prefs = Object.fromEntries(new URLSearchParams(prefsCookie ?? ''));

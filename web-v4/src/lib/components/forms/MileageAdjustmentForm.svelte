@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/common/Button.svelte';
+	import Alert from '$lib/components/common/Alert.svelte';
 	import Field from '$lib/components/common/Field.svelte';
 	import Input from '$lib/components/common/Input.svelte';
 	import { formatMileage, mileageLabel, MileageLabel } from '$lib/utils/vehicle';
@@ -27,14 +28,14 @@
 	class="flex flex-col gap-6"
 >
 	{#if formErrors.length > 0}
-		<div role="alert" class="p-3 rounded-md bg-negative/10 text-negative text-sm">
+		<Alert role="alert">
 			{#each formErrors as e}
 				<p>{e.title}</p>
 			{/each}
-		</div>
+		</Alert>
 	{/if}
 
-	<fieldset class="flex flex-col gap-4">
+	<fieldset>
 		<Field
 			name="mileage"
 			label={`Enter your current ${mileageLabel(vehicle.distanceUnit)}`}
