@@ -1,4 +1,4 @@
-import { Box, useColorModeValue } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import React from 'react';
 import getColorPalette from 'utils/colors';
 
@@ -7,14 +7,14 @@ export interface VehicleColorIndicatorProps {
     size?: number;
 }
 
-export const VehicleColorIndicator: React.FC<VehicleColorIndicatorProps> = ({ color, size = 5 }) => {
-    const bg = color || 'transparent';
-
+export const VehicleColorIndicator: React.FC<VehicleColorIndicatorProps> = ({ color, size = 6 }) => {
+    const bg = color || '#fafafa';
     const p = getColorPalette(bg);
-    const borderColor = useColorModeValue(p[400], p[900]);
+
+    const background = `linear-gradient(0deg, ${p[600]} 50%, ${bg} 50%)`;
 
     return (
-        <Box bg={bg} borderColor={borderColor} borderWidth={1} w={size} h={size} borderRadius="full" />
+        <Box bg={background} w={size} h={size} />
     );
 };
 
