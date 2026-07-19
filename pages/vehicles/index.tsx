@@ -1,15 +1,13 @@
 import { AddIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import {
-    Box, Button, Center, Flex, Heading, HStack, SimpleGrid, Text, useBreakpointValue,
+    Box, Button, Center, Flex, Heading, HStack, SimpleGrid, useBreakpointValue,
 } from '@chakra-ui/react';
 import ColorModeButton from 'components/common/ColorModeButton';
 import Header from 'components/common/Header';
-import LinkPreload from 'components/common/LinkPreload';
 import Logo from 'components/Logo';
 import Page from 'components/common/Page';
 import UserMenu from 'components/UserMenu';
 import VehiclesList from 'components/VehiclesList';
-import useRequest from 'hooks/useRequest';
 import { vehiclesAPIPath } from 'queries/vehicles';
 import React, { useState } from 'react';
 import createPersistedState from 'use-persisted-state';
@@ -19,14 +17,17 @@ import { newVehiclePath } from 'utils/resources';
 import EmptyState from 'components/common/EmptyState';
 import OverallStats from 'components/OverallStats';
 import { VehicleSortStrategy } from 'utils/sortable';
+import { prefetch } from 'utils/queries';
 import dynamic from 'next/dynamic';
 
 const VehicleSortMenu = dynamic(
     () => import('components/VehicleSortMenu'),
-    { ssr: false },
 );
 
 interface VehiclesProps {
+    fallback: {
+        vehicles: API.Vehicle[];
+    }
 }
 
 const PageHeader = () => {
@@ -50,25 +51,25 @@ const PageHeader = () => {
 
 const useSortStrategyState = createPersistedState('vehicleSortStrategy');
 
-const Vehicles: React.FC<VehiclesProps> = () => {
-    const { data, loading } = useRequest<API.Vehicle[]>(vehiclesAPIPath);
+const Vehicles: React.FC<VehiclesProps> = ({ fallback }) => {
+    const { vehicles } = fallback;
 
     const [showRetired, setShowRetired] = useState(false);
 
-    const activeVehicles = data?.filter((v) => !v.retired) ?? [];
-    const retiredVehicles = data?.filter((v) => v.retired) ?? [];
+    const activeVehicles = vehicles.filter((v) => !v.retired);
+    const retiredVehicles = vehicles.filter((v) => v.retired);
 
+    // TODO: implement user prefs api
     const [sortStrategy, setSortStrategy] = useSortStrategyState<VehicleSortStrategy>('newest_first');
 
     const newVehicleButtonSize = useBreakpointValue({ sm: 'xs', base: 'sm' });
 
     return (
         <Page
+            fallback={fallback}
             maxW="container.xl"
             Header={<PageHeader />}
         >
-            <LinkPreload path={vehiclesAPIPath} />
-
             <Box my={6}>
                 <OverallStats activeVehicles={activeVehicles} />
             </Box>
@@ -85,9 +86,9 @@ const Vehicles: React.FC<VehiclesProps> = () => {
                 <VehicleSortMenu sortStrategy={sortStrategy} onChange={setSortStrategy} />
             </Flex>
 
-            <VehiclesList vehicles={activeVehicles} loading={loading} sortStrategy={sortStrategy} />
+            <VehiclesList vehicles={activeVehicles} sortStrategy={sortStrategy} />
 
-            {!activeVehicles.length && !loading && (
+            {!activeVehicles.length && (
                 <EmptyState
                     heading="Add your first vehicle to get started"
                     action={(
@@ -126,8 +127,14 @@ export const getServerSideProps = withSession(async ({ req }) => {
     const redirect = authRedirect(req);
     if (redirect) return redirect;
 
+    const { data: vehicles } = await prefetch(req, vehiclesAPIPath);
+
     return {
-        props: {},
+        props: {
+            fallback: {
+                vehicles,
+            },
+        },
     };
 });
 
