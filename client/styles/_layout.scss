@@ -1,0 +1,49 @@
+#root {
+  @include clearfix;
+}
+
+#main {
+  margin-top: 100px;
+}
+
+#header {
+  .navbar {
+    min-height: 38px;
+  }
+
+  .navbar-form {
+    margin-top: 3px;
+    margin-bottom: 3px;
+  }
+
+  .btn {
+    margin: 4px 0;
+    border: none !important;
+
+    &.btn-default {
+      background: $gray-lighter;
+
+      &:hover {
+        background: darken($gray-lighter, 2%);
+      }
+    }
+  }
+
+  .back {
+    float: left;
+  }
+}
+
+.row-heading {
+  @extend .text-muted;
+  padding: 0 ($grid-gutter-width / 2);
+}
+
+
+.action-bar {
+  margin-top: 60px;
+
+  ~ #main {
+    margin-top: 40px;
+  }
+}
