@@ -49,18 +49,70 @@
     </div>
 
     <div class="col-sm-6">
-      {{#if milesPerYear}}
-        <p class="text-muted text-right">
-          You drive about {{formatNumber '0,000' milesPerYear}} miles a year
-        </p>
-      {{/if}}
+      <div class="row text-right text-muted">
+        <div class="col-md-6">
+          {{#if vin}}
+            <p>
+              VIN: {{vin}}
+            </p>
+          {{/if}}
+        </div>
+
+        {{#if milesPerYear}}
+          <div class="col-md-6">
+            <p>
+              You drive about {{formatNumber '0,000' milesPerYear}} miles a year
+            </p>
+          </div>
+        {{/if}}
+      </div>
     </div>
   </div>
 </div>
 
 <div id="main">
   <div class="container">
-    {{view remindersView}}
+    {{#empty collection}}
+    {{else}}
+      <div class="row">
+        <div class="col-sm-4">
+          {{view remindersView}}
+        </div>
+
+        <div class="col-sm-4">
+          <h5 class="text-muted">
+            <span class="fa fa-wrench fa-fw"></span>
+            Recommended Maintenance
+          </h5>
+          <ul class="list-unstyled">
+            {{#each nextActions}}
+              <li>
+                {{action}} {{item}} {{inNextDuration}}
+              </li>
+            {{else}}
+              {{#if vin}}
+                <span class="text-muted">All good!</span>
+              {{else}}
+                <span class="text-muted">
+                  Add your VIN (click on your vehicle in the upper left) to get maintenance based on your mileage.
+                </span>
+              {{/if}}
+            {{/each}}
+          </ul>
+        </div>
+        <div class="col-sm-4">
+          <h5 class="text-muted">
+            <i class="fa fa-book fa-fw"></i>
+            Vehicle Notes
+          </h5>
+
+          <div id="vehicle-notes">
+            {{{markdown notes}}}
+            <a href="#" class="js-edit-vehicle-notes">Edit</a>
+          </div>
+        </div>
+      </div>
+    {{/empty}}
     {{view recordsView}}
   </div>
 </div>
