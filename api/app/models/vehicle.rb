@@ -7,30 +7,35 @@ class Vehicle < ApplicationRecord
 
   ONE_YEAR = 365
 
+  def estimated_mileage
+    return unless can_estimate_mpd?
+
+    last_record = records.last
+
+    elapsed_days = (Time.now - last_record.date).to_i / 1.day
+    (last_record.mileage + miles_per_day * elapsed_days).to_i
+  end
+
   def miles_per_year
-    mpd = miles_per_day
-    return if mpd.nil? or mpd < 0
-
-    first = records.order('date ASC').limit(1).first
-    elapsed_days = (Time.now - first.date).to_i / 1.day
-
-    if elapsed_days < ONE_YEAR
-      remaining_days = ONE_YEAR - Date.today.yday
-      mpy = mpd * (elapsed_days + remaining_days)
-    else
-      mpy = mpd * ONE_YEAR
-    end
-
-    (mpy / 10).floor * 10
+    return unless can_estimate_mpd?
+    (miles_per_day * ONE_YEAR).to_i
   end
 
   def miles_per_day
+    return unless can_estimate_mpd?
+
     first = records.first
-    last  = records.last
-    return if last.nil? or last.mileage.nil?
+    last = records.last
 
     elapsed_days    = (last.date - first.date).to_i / 1.day
     elapsed_mileage = last.mileage - first.mileage
-    elapsed_mileage / elapsed_days
+    elapsed_mileage / elapsed_days.to_f
+  end
+
+  def can_estimate_mpd?
+    first = records.first
+    last = records.last
+
+    !(last.nil? or last.mileage.nil?)
   end
 end
